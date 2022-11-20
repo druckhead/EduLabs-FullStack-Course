@@ -6,6 +6,16 @@ __pycache__/
 # C extensions
 *.so
 
+# macOS
+.DS_STORE
+
+# PyCharm
+.idea
+Lessons/Lesson-*/.idea
+Lessons/Lesson-*/Lesson-Code/.idea
+Lessons/Lesson-*/Homework/.idea
+Lessons/Lesson-*/*/venv
+
 # Distribution / packaging
 .Python
 build/
