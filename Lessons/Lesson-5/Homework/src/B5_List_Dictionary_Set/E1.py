@@ -48,7 +48,7 @@ def lists_to_dict(list1: list[str], list2: list[str])->dict:
             my_dict.update({flowers[i]: [color[i]]})
         else:
             my_dict[flowers[i]].append(color[i])
-    return(my_dict)
+    return my_dict
 
 
 pprint(create_dict(flowers, color))
