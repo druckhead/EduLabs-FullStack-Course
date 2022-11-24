@@ -20,6 +20,7 @@ def split_dict(_d: dict[str, list]) -> list[dict[str]]:
             else:
                 # if same len can update dictionary in index i of list accordingly
                 new_list[i].update({k: _v})
+                # new_list[i][k] = _v
 
     return new_list
 

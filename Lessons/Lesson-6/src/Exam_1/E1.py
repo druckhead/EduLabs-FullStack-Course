@@ -1,30 +1,32 @@
 from random import randint
+
+
 # Implement a function second_largest that receives a list of numbers
 # and returns the second-largest number in the list.
 # You can assume that there are no non-numeric values in the list.
 
-def second_largest(__list: list[float]) -> int:
-    __sorted_len = len(__list)
-    if __sorted_len == 0:
-        return None
-    __sorted_list = sorted(__list)
-    __max = __sorted_list[__sorted_len - 1]
-    __second_largest = __sorted_list[__sorted_len - 1]
 
-    for i in range(__sorted_len):
-        if __sorted_list[i] < __max:
-            __second_largest = __sorted_list[i]
-        elif __sorted_list[i] == __max:
-            return __second_largest
+def second_largest(num_list: list[float]) -> float:
+    first_max = max(num_list[0], num_list[1])
+    second_biggest = min(num_list[0], num_list[1])
 
-    return __second_largest
+    for i in range(2, len(num_list)):
+        if num_list[i] > first_max:
+            second_biggest = first_max
+            first_max = num_list[i]
+        elif second_biggest < num_list[i] != first_max:
+            second_biggest = num_list[i]
+        elif first_max == second_biggest != num_list[i]:
+            second_biggest = num_list[i]
+
+    return second_biggest
 
 
 if __name__ == "__main__":
 
-    for i in range(15):
+    for k in range(15):
         __list = []
-        len_list = randint(1, 12)
+        len_list = randint(2, 12)
         for j in range(len_list):
             random_num = randint(1, 9999)
             __list.append(random_num)
@@ -32,8 +34,3 @@ if __name__ == "__main__":
         print(__list, end=" => ")
         print(second_largest(__list))
         print()
-
-
-
-
-

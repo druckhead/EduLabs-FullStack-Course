@@ -5,19 +5,20 @@
 # {'c1': 'Red', 'c2': 'Green'}
 
 def rem_none_items(_dict: dict) -> None:
-    items_to_pop = list()
+    empty_items = ([], {}, (), "", None)
+    l = list()
 
     for k, v in _dict.items():
-        if _dict.get(k) is None or len(_dict.get(k)) == 0:
-            items_to_pop.append(k)
+        if v in empty_items:
+            l.append(k)
+    for i in l:
+        _dict.pop(i)
 
-    for item in items_to_pop:
-        if _dict.get(item) is None or len(_dict.get(item)) == 0:
-            _dict.pop(item)
+
     return
 
 
-d = {'c1': 'Red', 'c2': 'Green', 'c3': None, 'c4': [], 'c5': ""}
+d = {'c1': 'Red', 'c2': 'Green', 'c3': None, 'c4': [], 'c5': "", "c6": True}
 print(d)
 rem_none_items(d)
 print(d)
