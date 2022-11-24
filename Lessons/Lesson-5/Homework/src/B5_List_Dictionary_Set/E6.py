@@ -26,12 +26,11 @@ def city_dates(_my_cities: dict[int, dict[str, list[str]]
     for year, countries in _my_cities.items():
         for country, cities in countries.items():
             for city in cities:
-                new_dict[city] = []
-
-    for year, countries in _my_cities.items():
-        for country, cities in countries.items():
-            for city in cities:
-                new_dict[city].append(year)
+                if new_dict.get(city) == None:
+                    new_dict[city] = []
+                    new_dict[city].append(year)
+                else:
+                    new_dict[city].append(year)
 
     return new_dict
 
