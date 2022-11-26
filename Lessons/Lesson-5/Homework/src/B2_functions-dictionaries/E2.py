@@ -10,14 +10,14 @@ from pprint import pprint
 
 
 def create_dict_list(*args: tuple[str, int]) -> dict[str | list]:
-    _dict: dict[str, list] = dict()
+    new_dict: dict[str, list] = dict()
 
     for arg in args[0]:
-        if arg[0] not in _dict.keys():
-            _dict[arg[0]] = [arg[1]]
+        if arg[0] not in new_dict.keys():
+            new_dict[arg[0]] = [arg[1]]
         else:
-            _dict[arg[0]].append(arg[1])
-    return  _dict
+            new_dict[arg[0]].append(arg[1])
+    return  new_dict
 
 
 l = [('yellow', 1), ('blue', 2), ('yellow', 3), ('blue', 4), ('red', 1)]
