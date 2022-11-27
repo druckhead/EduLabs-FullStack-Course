@@ -11,6 +11,8 @@ my_cities = {
            'France': ['Paris', 'Nice', 'Bordeaux'],
            'Japan': ['Tokyo', 'Toyokawa', 'Yatomi']}
 }
+
+
 # Create a function that receives my_cities and returns dictionary arranged as follows:
 # Keys = cities
 # Values = all dates when I was visiting the cities
@@ -24,13 +26,11 @@ def city_dates(_my_cities: dict[int, dict[str, list[str]]
     new_dict = dict()
 
     for year, countries in _my_cities.items():
-        for country, cities in countries.items():
+        for cities in countries.values():
             for city in cities:
-                if new_dict.get(city) == None:
+                if new_dict.get(city) is None:
                     new_dict[city] = []
-                    new_dict[city].append(year)
-                else:
-                    new_dict[city].append(year)
+                new_dict[city].append(year)
 
     return new_dict
 
