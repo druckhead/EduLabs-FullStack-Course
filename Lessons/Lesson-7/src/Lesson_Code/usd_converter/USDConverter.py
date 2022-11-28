@@ -2,7 +2,7 @@ from pprint import pprint
 
 
 class USDConverter:
-    def __init__(self, name:str):
+    def __init__(self):
         self.rates: dict[str, float] = dict()
 
     def display_all_rates(self) -> None:
