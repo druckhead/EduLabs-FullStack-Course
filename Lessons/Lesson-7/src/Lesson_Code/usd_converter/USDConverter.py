@@ -33,9 +33,9 @@ class USDConverter:
         return False
 
     def convert(self, from_currency, to_currency, amount) -> float | None:
-        if from_currency not in self.rates or to_currency not in self.rates:
+        if from_currency not in self.rates and to_currency not in self.rates:
             return None
         if to_currency == "USD":
-            return amount / self.rates.get(from_currency)
-        return amount * self.rates.get(to_currency)
+            return amount * self.rates.get(to_currency)
+        return amount / self.rates.get(from_currency)
 
