@@ -96,3 +96,12 @@ class RavKav:
             print(f"Type: {k.name}")
             print(f"\tNumber of rides: {v}")
         return
+
+    def __str__(self):
+        to_str = f"<RavKav: id={self.__holder_id}>\n" \
+                 f"Name: {self.__holder_name}\n" \
+                 f"Balance: {self.__balance}"
+        return to_str
+
+    def __repr__(self):
+        return f"<RavKav: id={self.__holder_id}>"
