@@ -18,7 +18,7 @@ class RavKav:
     def __init__(self, holder_id: str, holder_name: str, balance: float = 0):
         self.__holder_id = holder_id
         self.__holder_name = holder_name
-        self.__balance = balance
+        self._set_balance(balance)
 
         self.__dates_log: dict[datetime, int] = {}
         self.__ride_type_log: dict[RideType, int] = {}
@@ -35,8 +35,7 @@ class RavKav:
     def get_balance(self) -> float:
         return self.__balance
 
-    @get_balance.setter
-    def get_balance(self, value) -> None:
+    def _set_balance(self, value) -> None:
         if value < 0:
             raise ValueError
         self.__balance = value
@@ -44,31 +43,31 @@ class RavKav:
     def top_up(self, amount: float) -> None:
         if amount < 0:
             raise ValueError
-        self.get_balance = (amount + self.__balance)
+        self._set_balance(amount + self.__balance)
 
-    def use_balance(self, amount: float) -> None:
+    def _use_balance(self, amount: float) -> None:
         if self.__balance - amount < 0:
             raise ValueError
-        self.get_balance = (self.__balance - amount)
+        self._set_balance(self.__balance - amount)
 
     def ride(self, ride_km: int, date: datetime.date) -> None:
         if ride_km <= RideType.short.value:
-            self.use_balance(RidePrice.short.value)
-            self.update_num_rides_by_type(RideType.short)
+            self._use_balance(RidePrice.short.value)
+            self._update_num_rides_by_type(RideType.short)
         elif ride_km <= RideType.medium.value:
-            self.use_balance(RidePrice.medium.value)
-            self.update_num_rides_by_type(RideType.medium)
+            self._use_balance(RidePrice.medium.value)
+            self._update_num_rides_by_type(RideType.medium)
         else:
-            self.use_balance(RidePrice.long.value)
-            self.update_num_rides_by_type(RideType.long)
-        self.update_num_rides_by_date(date)
+            self._use_balance(RidePrice.long.value)
+            self._update_num_rides_by_type(RideType.long)
+        self._update_num_rides_by_date(date)
 
     def get_num_rides_by_date(self, date: datetime.date) -> int:
         if date not in self.__dates_log:
             raise KeyError
         return self.__dates_log[date]
 
-    def update_num_rides_by_date(self, date: datetime.date) -> None:
+    def _update_num_rides_by_date(self, date: datetime.date) -> None:
         if date not in self.__dates_log:
             self.__dates_log[date] = 0
         self.__dates_log[date] += 1
@@ -78,7 +77,7 @@ class RavKav:
             raise KeyError
         return self.__ride_type_log[ride_type]
 
-    def update_num_rides_by_type(self, ride_type: RideType) -> None:
+    def _update_num_rides_by_type(self, ride_type: RideType) -> None:
         if ride_type not in self.__ride_type_log:
             self.__ride_type_log[ride_type] = 0
         self.__ride_type_log[ride_type] += 1
