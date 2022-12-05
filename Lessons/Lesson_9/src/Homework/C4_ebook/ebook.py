@@ -8,8 +8,10 @@ class Ebook:
 
         curr_w_page: int = 0
         curr_page: int = 1
+
         with open(f_path, 'r') as fh:
             content = fh.read()
+
         curr_w = ""
         for c in content:
             curr_w += c
@@ -21,10 +23,11 @@ class Ebook:
                 if curr_w_page == w_page_lim:
                     curr_page += 1
                     curr_w_page = 0
-                if curr_page not in self.__pages:
-                    self.__pages[curr_page] = ""
-                self.__pages[curr_page] += curr_w
-                curr_w = ""
+            if curr_page not in self.__pages:
+                self.__pages[curr_page] = ""
+            self.__pages[curr_page - 1 if curr_page > 1 and curr_w_page == 0 else curr_page] += curr_w
+            curr_w = ""
+        self.__pages[curr_page] += curr_w
 
     def get_total_pages(self) -> int:
         return len(self.__pages.keys())
@@ -33,13 +36,15 @@ class Ebook:
         if number not in self.__pages:
             raise KeyError
         print(self.__pages[number])
-
+        if __debug__:
+            print()
+            print(len(self.__pages[number].split()))
 
 if __name__ == "__main__":
     ebook = Ebook(
         "/Users/danielraz/EduLabs-FullStack-Course"
         "/Lessons/Lesson_9/src/Lesson_Code/files/data"
         "/alice_in_wonderland.txt",
-        100)
+        200)
 
     ebook.display_page(1)
