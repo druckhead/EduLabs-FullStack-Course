@@ -10,46 +10,61 @@ def get_year(date: str) -> int:
     return year
 
 
-def apple_stock_csv(fpath: str):
-    fieldnames = ['Year', 'Avg Price', 'Min Price', "Max Price", 'Avg Volume', "Min Volume",
-                  'Max Volume']
-    with open("avg_aapl_prices.csv", "w") as new_file:
+def create_new_csv_file(file_name: str, fieldnames: list[str]) -> None:
+    with open(file_name, "w") as new_file:
         writer = csv.DictWriter(new_file, fieldnames=fieldnames, delimiter=",", quoting=csv.QUOTE_NONE)
         writer.writeheader()
 
-    prev_year: int = 0
-    row_cntr: int = 0
-    avg_price, min_price, max_price, avg_volume, min_volume, max_volume = 0.0, float('inf'), -float('inf'), 0.0, float(
-        'inf'), -float('inf')
+
+def write_to_file(file_name: str, fieldnames: list[str], row_dict: dict[str, int | float]) -> None:
+    with open("avg_aapl_prices.csv", "a") as new_file:
+        writer = csv.DictWriter(new_file, fieldnames=fieldnames, delimiter=",", quoting=csv.QUOTE_NONE)
+        writer.writerow(row_dict)
+
+
+def create_row_dict(year: int, avg_price: float, min_price: float, max_price: float, avg_volume: float,
+                    min_volume: float, max_volume: float) -> dict[str, int | float]:
+    return {
+        "Year": year,
+        "Avg Price": avg_price,
+        "Min Price": min_price,
+        "Max Price": max_price,
+        "Avg Volume": avg_volume,
+        "Min Volume": min_volume,
+        "Max Volume": max_volume,
+    }
+
+
+def update_file(file_name: str, from_file: str, fieldnames: list[str]) -> None:
+    avg_price, min_price, max_price = 0.0, float('inf'), -float('inf')
+    avg_volume, min_volume, max_volume = 0.0, float('inf'), -float('inf')
     total_volume: float = 0
     total_price: float = 0
+    prev_year: int = 0
+    row_cntr: int = 0
 
-    with open(fpath, 'r') as csv_file:
+    with open(from_file, 'r') as csv_file:
         reader = csv.DictReader(csv_file, delimiter=",", quoting=csv.QUOTE_NONE)
+
         for row in reader:
             date: str = row["Date"]
             curr_year: int = get_year(date)
 
             if 0 != prev_year != curr_year:
-                # todo create dict and write to new file
-                row_dict = {
-                    "Year": prev_year,
-                    "Avg Price": total_price / row_cntr,
-                    "Min Price": min_price,
-                    "Max Price": max_price,
-                    "Avg Volume": total_volume / row_cntr,
-                "Min Volume": min_volume,
-                "Max Volume": max_volume,
-                }
-                avg_price, min_price, max_price, avg_volume, min_volume, max_volume = 0.0, float('inf'), -float(
-                    'inf'), 0.0, float('inf'), -float('inf')
+                row_dict = create_row_dict(prev_year,
+                                           total_price / row_cntr,
+                                           min_price, max_price,
+                                           total_volume / row_cntr,
+                                           min_volume,
+                                           max_volume)
+
+                avg_price, min_price, max_price = 0.0, float('inf'), -float('inf')
+                avg_volume, min_volume, max_volume = 0.0, float('inf'), -float('inf')
                 row_cntr = 0
                 total_price = 0
                 total_volume = 0
 
-                with open("avg_aapl_prices.csv", "a") as new_file:
-                    writer = csv.DictWriter(new_file, fieldnames=fieldnames, delimiter=",", quoting=csv.QUOTE_NONE)
-                    writer.writerow(row_dict)
+                write_to_file(file_name, fieldnames, row_dict)
 
             # calculate values
             min_price = min(min_price, float(row["Low"]))
@@ -63,26 +78,32 @@ def apple_stock_csv(fpath: str):
             prev_year = curr_year
 
         # to get the missing final year
-        row_dict = {
-            "Year": prev_year,
-            "Avg Price": total_price / row_cntr,
-            "Min Price": min_price,
-            "Max Price": max_price,
-            "Avg Volume": total_volume / row_cntr,
-            "Min Volume": min_volume,
-            "Max Volume": max_volume,
-        }
+        row_dict = create_row_dict(prev_year,
+                                   total_price / row_cntr,
+                                   min_price,
+                                   max_price,
+                                   total_volume / row_cntr,
+                                   min_volume,
+                                   max_volume)
 
-        with open("avg_aapl_prices.csv", "a") as new_file:
-            writer = csv.DictWriter(new_file, fieldnames=fieldnames, delimiter=",", quoting=csv.QUOTE_NONE)
-            writer.writerow(row_dict)
+        write_to_file(file_name, fieldnames, row_dict)
+
+
+def apple_stock_csv(fpath: str, new_file_name: str):
+    fieldnames = ['Year', 'Avg Price', 'Min Price', "Max Price", 'Avg Volume', "Min Volume", 'Max Volume']
+    create_new_csv_file(new_file_name, fieldnames)
+    update_file(new_file_name, fpath, fieldnames)
 
 
 if __name__ == "__main__":
-    apple_stock_csv("/Users/danielraz/EduLabs-FullStack-Course/Lessons/Lesson_9/src/Lesson_Code/files/data/AAPL.csv")
+    # create a new csv of AAPL stock avgs
+    apple_stock_csv("/Users/danielraz/EduLabs-FullStack-Course/Lessons/Lesson_9/src/Lesson_Code/files/data/AAPL.csv",
+                    "avg_aapl_prices.csv")
+
+    # test out the file we created
     with open("avg_aapl_prices.csv", 'r') as f:
         field_names = ['Year', 'Avg Price', 'Min Price', "Max Price", 'Avg Volume', "Min Volume",
-                      'Max Volume']
+                       'Max Volume']
         csvreader = csv.reader(f, delimiter=",", quoting=csv.QUOTE_NONE)
         for _row in csvreader:
             print(_row)
