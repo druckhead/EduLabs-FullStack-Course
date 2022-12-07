@@ -30,6 +30,7 @@ class _Apartment:
 
     def close_deal(self):
         self.__deal_state = _DealState.closed
+
     def get_agency_fee(self):
         pass
 
