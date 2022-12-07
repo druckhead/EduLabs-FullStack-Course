@@ -29,8 +29,7 @@ class _Apartment:
         return self.__FEE
 
     def close_deal(self):
-        self.__deal_state = _DealState.closed if self.__deal_state == _DealState.open else _DealState.open
-
+        self.__deal_state = _DealState.closed
     def get_agency_fee(self):
         pass
 
