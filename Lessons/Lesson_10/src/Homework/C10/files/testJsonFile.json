@@ -1,0 +1,11 @@
+{
+  "name": "Daniel Raz",
+  "age": 26,
+  "occupation": "Developer",
+  "family": {
+    "brother": true,
+    "sister": true,
+    "father": true,
+    "mother": true
+  }
+}
