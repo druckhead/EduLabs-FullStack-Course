@@ -1,8 +1,7 @@
 from datetime import datetime, timedelta
 from uuid import uuid4
-
-from src.Homework.C1_Bus.busroute import BusRoute
-from src.Homework.C1_Bus.scheduledride import ScheduledRide
+from busroute import BusRoute
+from scheduledride import ScheduledRide
 from exceptions import *
 
 

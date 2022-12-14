@@ -1,4 +1,4 @@
-from src.Homework.C1_Bus.scheduledride import ScheduledRide
+from scheduledride import ScheduledRide
 
 
 class BusRoute:

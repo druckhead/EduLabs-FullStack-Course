@@ -1,4 +1,4 @@
-from src.Homework.C1_Bus.bestbuscompany import BestBusCompany
+from bestbuscompany import BestBusCompany
 from datetime import timedelta, datetime
 from uuid import uuid4
 
