@@ -20,6 +20,8 @@ class BestBusCompany:
                            f" in bus routes")
 
     def add_route(self, line_num: str, origin: str, destination: str, stops: list[str]):
+        self._validate_line_number(line_num)
+
         new_route = BusRoute(line_num, origin, destination, stops)
         self.__routes["line_num"] = {new_route.line_number: new_route}
         if new_route.origin not in self.__routes["origin"]:
@@ -49,6 +51,7 @@ class BestBusCompany:
 
     def update_route(self, line_number: str, origin: str = None, destination: str = None, stops: list[str] = None):
         self._validate_line_number(line_number)
+
         route = self.__routes["line_number"][line_number]
         if origin is not None:
             route.origin = origin
@@ -59,6 +62,7 @@ class BestBusCompany:
 
     def add_scheduled_ride(self, line_number: str, origin_time: datetime, destination_time: datetime, driver_name: str):
         self._validate_line_number(line_number)
+
         new_ride = ScheduledRide(origin_time, destination_time, driver_name)
         route = self.__routes["line_num"][line_number]
         route.scheduled_rides.append(new_ride)
