@@ -4,6 +4,7 @@ from enum import Enum, auto
 from exceptions import *
 from bestbuscompany import BestBusCompany
 from usermenu import PassengerMenu, ManagerMenu
+from time import sleep
 
 
 class UserType(Enum):
@@ -21,9 +22,14 @@ class Menu:
         else:
             self._load()
 
+        self._signed_in = False
         self._wrong_password_count = 0
         self._user_type: UserType | None = None
         self._user_menu: PassengerMenu | ManagerMenu | None = None
+
+    @property
+    def signed_in(self):
+        return self._signed_in
 
     @property
     def max_password_attempts(self):
@@ -50,7 +56,7 @@ class Menu:
               "1. manager\n"
               "2. passenger\n"
               "3. quit\n"
-              ">>> ")
+              ">>> ", end="")
 
     @staticmethod
     def display_manager_actions():
@@ -60,7 +66,7 @@ class Menu:
               "3. Update Route\n"
               "4. Add Scheduled Ride\n"
               "5. Sign Out\n"
-              ">>> ")
+              ">>> ", end="")
 
     @staticmethod
     def display_passenger_actions():
@@ -68,7 +74,7 @@ class Menu:
               "1. Search Route\n"
               "2. Report Delay\n"
               "3. Sign Out\n"
-              ">>> ")
+              ">>> ", end="")
 
     def init_manager_menu(self):
         self._user_menu = ManagerMenu()
@@ -86,6 +92,20 @@ class Menu:
 
     def quit(self):
         self._save()
+
+    def sign_in(self):
+        print("Signing In")
+        self._signed_in = True
+        sleep(1)
+        print("Signed In")
+        sleep(1)
+
+    def sign_out(self):
+        print("Signing Out")
+        self._signed_in = False
+        sleep(1)
+        print("Signed Out")
+        sleep(1)
 
     def _load(self):
         try:
