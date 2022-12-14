@@ -1,4 +1,6 @@
 from datetime import datetime, timedelta
+from uuid import uuid4
+
 from src.Homework.C1_Bus.busroute import BusRoute
 from src.Homework.C1_Bus.scheduledride import ScheduledRide
 from exceptions import *
@@ -84,6 +86,13 @@ class BestBusCompany:
 
 
 
-    def report_delay(self, delay: timedelta):
-        pass
+    def report_delay(self, line_number: str, ride_id: uuid4, delay: timedelta) -> None:
+        self._validate_line_number(line_number)
+        rides = self.__routes["line_num"][line_number].scheduled_rides
+        for ride in rides:
+            if ride.ride_id == ride_id:
+                ride.delay = delay
+                return
+        raise MissingRideIDError()
+
 
