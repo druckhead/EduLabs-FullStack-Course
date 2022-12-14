@@ -63,8 +63,8 @@ class BestBusCompany:
         route = self.__routes["line_num"][line_number]
         route.scheduled_rides.append(new_ride)
 
-
-    def search_route(self, line_num: str = None, origin: str = None, destination: str = None, bus_stop: str = None) -> BusRoute:
+    def search_route(self, line_num: str = None, origin: str = None, destination: str = None,
+                     bus_stop: str = None) -> BusRoute:
         if line_num is not None:
             self._validate_line_number(line_num)
             return self.__routes["line_num"][line_num]
@@ -83,8 +83,6 @@ class BestBusCompany:
 
         raise MissingSearchKeyError()
 
-
-
     def report_delay(self, line_number: str, ride_id: uuid4, delay: timedelta) -> None:
         self._validate_line_number(line_number)
         rides = self.__routes["line_num"][line_number].scheduled_rides
@@ -93,5 +91,3 @@ class BestBusCompany:
                 ride.delay = delay
                 return
         raise MissingRideIDError()
-
-
