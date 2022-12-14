@@ -3,3 +3,6 @@ class BaseBusCompanyException(Exception):
 
 class MissingSearchKeyError(BaseBusCompanyException):
     pass
+
+class MissingRideIDError(BaseBusCompanyException):
+    pass
