@@ -1,4 +1,6 @@
+from datetime import datetime
 from src.Homework.C1_Bus.busroute import BusRoute
+from src.Homework.C1_Bus.scheduledride import ScheduledRide
 
 
 class BestBusCompany:
@@ -34,6 +36,7 @@ class BestBusCompany:
         del self.__routes["line_num"][line_number]
 
     def update_route(self, line_number: str, origin: str = None, destination: str = None, stops: list[str] = None):
+        self._validate_line_number(line_number)
         route = self.__routes["line_number"][line_number]
         if origin is not None:
             route.origin = origin
@@ -42,11 +45,31 @@ class BestBusCompany:
         if stops is not None:
             route.stops = stops
 
-    def add_scheduled_ride(self):
-        pass
+    def add_scheduled_ride(self, line_number: str, origin_time: datetime, destination_time: datetime, driver_name: str):
+        self._validate_line_number(line_number)
+        new_ride = ScheduledRide(origin_time, destination_time, driver_name)
+        route = self.__routes["line_num"][line_number]
+        route.scheduled_rides.append(new_ride)
 
-    def search_route(self):
-        pass
+
+    def search_route(self, line_num: str = None, origin: str = None, destination: str = None, bus_stop: str = None) -> BusRoute:
+        if line_num is not None:
+            self._validate_line_number(line_num)
+            return self.__routes["line_num"][line_num]
+        elif origin is not None:
+            if origin not in self.__routes["origin"]:
+                raise KeyError()
+            return self.__routes["origin"][origin]
+        elif destination is not None:
+            if destination not in self.__routes["destination"]:
+                raise KeyError()
+            return self.__routes["destination"][destination]
+        elif bus_stop is not None:
+            if bus_stop not in self.__routes["bus_stop"]:
+                raise KeyError()
+            return self.__routes["bus_stop"][bus_stop]
+
+
 
     def report_delay(self):
         pass
