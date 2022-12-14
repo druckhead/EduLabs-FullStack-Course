@@ -8,7 +8,7 @@ class ScheduledRide:
         self._origin_time = origin_time
         self._destination_time = destination_time
         self._driver_name = driver_name
-        self._delays: timedelta | None = None
+        self._delay: timedelta | None = None
 
     @property
     def ride_id(self) -> uuid4:
@@ -36,7 +36,7 @@ class ScheduledRide:
 
     @property
     def delays(self) -> timedelta | None:
-        return self._delays
+        return self._delay
 
     @delays.setter
     def delays(self, delay: timedelta):
