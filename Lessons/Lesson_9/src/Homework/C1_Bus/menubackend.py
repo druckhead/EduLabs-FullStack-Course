@@ -1,16 +1,91 @@
 import os.path
-from datetime import datetime
 import pickle
-from src.Homework.C1_Bus.bestbuscompany import BestBusCompany
-from src.Homework.C1_Bus.usermenu import PassengerMenu, ManagerMenu
+from enum import Enum, auto
+from exceptions import *
+from bestbuscompany import BestBusCompany
+from usermenu import PassengerMenu, ManagerMenu
 
 
-class MainMenu:
+class UserType(Enum):
+    MANAGER = auto()
+    PASSENGER = auto()
+
+
+class Menu:
     __PASSWORD = "RideWithUs!"
+    __MAX_WRONG_PASSWORD = 3
 
     def __init__(self):
-        self._bus_company = BestBusCompany()
-        self._user = None
+        if not os.path.exists("bus_company.pickle"):
+            self._bus_company = BestBusCompany()
+        else:
+            self._load()
+
+        self._wrong_password_count = 0
+        self._user_type: UserType | None = None
+        self._user_menu: PassengerMenu | ManagerMenu | None = None
+
+    @property
+    def max_password_attempts(self):
+        return self.__MAX_WRONG_PASSWORD
+
+    @property
+    def user_type(self):
+        return self._user_type
+
+    @user_type.setter
+    def user_type(self, user: UserType):
+        if user == UserType.MANAGER:
+            self._user_type = UserType.MANAGER
+        else:
+            self._user_type = UserType.PASSENGER
+
+    @property
+    def user_menu(self):
+        return self._user_menu
+
+    @staticmethod
+    def display_user_prompt():
+        print("Are you a passenger or manager?\n"
+              "1. manager\n"
+              "2. passenger\n"
+              "3. quit\n"
+              ">>> ")
+
+    @staticmethod
+    def display_manager_actions():
+        print("Actions\n"
+              "1. Add Route\n"
+              "2. Delete Route\n"
+              "3. Update Route\n"
+              "4. Add Scheduled Ride\n"
+              "5. Sign Out\n"
+              ">>> ")
+
+    @staticmethod
+    def display_passenger_actions():
+        print("Actions\n"
+              "1. Search Route\n"
+              "2. Report Delay\n"
+              "3. Sign Out\n"
+              ">>> ")
+
+    def init_manager_menu(self):
+        self._user_menu = ManagerMenu()
+
+    def init_passenger_menu(self):
+        self._user_menu = PassengerMenu()
+
+    def auth_pass(self, password: str):
+        if self.__PASSWORD != password:
+            self._wrong_password_count += 1
+            if self._wrong_password_count == self.__MAX_WRONG_PASSWORD:
+                self._wrong_password_count = 0
+                raise TooManyWrongPasswordAttemptsError()
+            raise InvalidPasswordError()
+
+    def quit(self):
+        self._save()
 
     def _load(self):
         try:
@@ -21,27 +96,7 @@ class MainMenu:
 
     def _save(self):
         try:
-
-    def main(self):
-        self._user = ManagerMenu()
-        self._user.add_route(self._bus_company, "1", "Tel Aviv", "Jerusalem", ["yaffo", "yahud"])
-        self._user.add_scheduled_ride(self._bus_company, "1", datetime(year=2022, month=12, day=14, hour=14, minute=30),
-                                      datetime(year=2022, month=12, day=14, hour=16, minute=0),
-                                      "Jesus")
-        self._user = PassengerMenu()
-        route = self._user.search_route(self._bus_company, "1")
-        print(route)
-        self._user = ManagerMenu()
-        self._user.delete_route(self._bus_company, "1")
-
-        self._user = PassengerMenu()
-        try:
-            route = self._user.search_route(self._bus_company, "1")
-        except KeyError as e:
-            print()
-            print(e)
-
-
-if __name__ == '__main__':
-    mainmenu = MainMenu()
-    mainmenu.main()
+            with open("bus_company.pickle", 'wb') as fh:
+                pickle.dump(self._bus_company, fh)
+        except FileNotFoundError as err:
+            print(err)
