@@ -15,10 +15,9 @@ class BestBusCompany:
             raise KeyError(f"Invalid line number: {line_number} does not exist"
                            f" in bus routes")
 
-
     def add_route(self, line_num: str, origin: str, destination: str, stops: list[str]):
         new_route = BusRoute(line_num, origin, destination, stops)
-        self.__routes["line_num"] = {new_route.line_number : new_route}
+        self.__routes["line_num"] = {new_route.line_number: new_route}
         if new_route.origin not in self.__routes["origin"]:
             self.__routes["origin"][new_route.origin] = []
         self.__routes["origin"][new_route.origin].append(new_route)
@@ -34,8 +33,14 @@ class BestBusCompany:
         self._validate_line_number(line_number)
         del self.__routes["line_num"][line_number]
 
-    def update_rout(self, line_number: str):
-        pass
+    def update_route(self, line_number: str, origin: str = None, destination: str = None, stops: list[str] = None):
+        route = self.__routes["line_number"][line_number]
+        if origin is not None:
+            route.origin = origin
+        if destination is not None:
+            route.destination = destination
+        if stops is not None:
+            route.stops = stops
 
     def add_scheduled_ride(self):
         pass
