@@ -16,8 +16,7 @@ class BestBusCompany:
 
     def _validate_line_number(self, line_number: str):
         if line_number not in self.__routes["line_num"]:
-            raise KeyError(f"Invalid line number: {line_number} does not exist"
-                           f" in bus routes")
+            raise LineDoesntExistError(line_number)
 
     def add_route(self, line_num: str, origin: str, destination: str, stops: list[str]):
         self._validate_line_number(line_num)
@@ -74,15 +73,15 @@ class BestBusCompany:
             return self.__routes["line_num"][line_num]
         elif origin is not None:
             if origin not in self.__routes["origin"]:
-                raise KeyError()
+                raise OriginDoesntExistError(origin)
             return self.__routes["origin"][origin]
         elif destination is not None:
             if destination not in self.__routes["destination"]:
-                raise KeyError()
+                raise DestinationDoesntExistError(destination)
             return self.__routes["destination"][destination]
         elif bus_stop is not None:
             if bus_stop not in self.__routes["bus_stop"]:
-                raise KeyError()
+                raise BusStopDoesntExistError(bus_stop)
             return self.__routes["bus_stop"][bus_stop]
 
         raise MissingSearchKeyError()
@@ -94,4 +93,4 @@ class BestBusCompany:
             if ride.ride_id == ride_id:
                 ride.delay = delay
                 return
-        raise MissingRideIDError()
+        raise RideIDDoesntExistError(ride_id)
