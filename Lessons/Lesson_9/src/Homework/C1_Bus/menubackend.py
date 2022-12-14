@@ -60,7 +60,7 @@ class Menu:
 
     @staticmethod
     def display_manager_actions():
-        print("Actions\n"
+        print("Actions for Manager\n"
               "1. Add Route\n"
               "2. Delete Route\n"
               "3. Update Route\n"
@@ -70,7 +70,7 @@ class Menu:
 
     @staticmethod
     def display_passenger_actions():
-        print("Actions\n"
+        print("Actions for Passenger\n"
               "1. Search Route\n"
               "2. Report Delay\n"
               "3. Sign Out\n"
