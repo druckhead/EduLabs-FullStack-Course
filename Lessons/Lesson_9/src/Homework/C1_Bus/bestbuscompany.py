@@ -8,11 +8,11 @@ from exceptions import *
 
 class BestBusCompany:
     def __init__(self):
-        self.__routes: dict[str, dict[str, BusRoute | list[BusRoute]] | None] = {
-            "line_num": None,
-            "origin": None,
-            "destination": None,
-            "bus_stop": None,
+        self.__routes: dict[str, dict[str, BusRoute | list[BusRoute]]] = {
+            "line_num": {},
+            "origin": {},
+            "destination": {},
+            "bus_stop": {},
         }
 
     def _validate_line_number(self, line_number: str):
