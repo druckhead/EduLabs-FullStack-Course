@@ -94,6 +94,7 @@ class Menu:
         self._save()
 
     def sign_in(self):
+        self._wrong_password_count = 0
         print("Signing In")
         self._signed_in = True
         sleep(1)
