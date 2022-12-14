@@ -9,7 +9,7 @@ class BusRoute:
         self._origin = origin
         self._destination = destination
         self._stops = stops
-        self._scheduled_rides: list[ScheduledRide] | None = None
+        self._scheduled_rides: list[ScheduledRide] = []
 
     @property
     def line_number(self) -> str:
