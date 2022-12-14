@@ -38,3 +38,13 @@ class BusRoute:
     @property
     def scheduled_rides(self) -> list[ScheduledRide]:
         return self._scheduled_rides
+
+    def __str__(self):
+        return f"Line #{self.line_number}\n" \
+               f"Origin: {self.origin}\n" \
+               f"Destination: {self.destination}\n" \
+               f"Stops: {self.stops}\n" \
+               f"Scheduled Rides: {self.scheduled_rides}"
+
+    def __repr__(self):
+        return f"<BusRoute Line #: {self.line_number}, Origin: {self.origin}, Destination: {self.destination}>"

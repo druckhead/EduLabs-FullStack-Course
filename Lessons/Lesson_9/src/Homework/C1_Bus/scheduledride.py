@@ -41,3 +41,14 @@ class ScheduledRide:
     @delay.setter
     def delay(self, delay: timedelta):
         self._delay = delay
+
+    def __str__(self):
+        return f"Ride ID: {self.ride_id}\n" \
+               f"Origin Time: {self.origin_time}\n" \
+               f"Destination Time: {self.destination_time}\n" \
+               f"Driver Name: {self.driver_name}" \
+               f"Delay: {self.delay}"
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__} Origin Time: {self.origin_time.time()}, " \
+               f"Destination Time: {self.destination_time.time()}, Delay: {self.delay}>"
