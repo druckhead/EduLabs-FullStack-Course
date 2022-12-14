@@ -35,9 +35,9 @@ class ScheduledRide:
         return self._driver_name
 
     @property
-    def delays(self) -> timedelta | None:
+    def delay(self) -> timedelta | None:
         return self._delay
 
-    @delays.setter
-    def delays(self, delay: timedelta):
-        self.delays = delay
+    @delay.setter
+    def delay(self, delay: timedelta):
+        self._delay = delay
