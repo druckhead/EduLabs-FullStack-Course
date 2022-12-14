@@ -5,13 +5,6 @@ class BusRoute:
     def __init__(self, line_number: str, origin: str, destination: str, stops: list[str]) -> None:
         if not line_number.isnumeric():
             raise ValueError(f"Invalid input of: {line_number}. Expected numeric line number")
-        # if len(stops) == 0:
-        #     # todo raise custom exception
-        #     pass
-        # split_stops = stops.split(",")
-        # if split_stops.count(",") != len(stops):
-        #     # todo raise custom exception
-        #     pass
         self._line_number = line_number
         self._origin = origin
         self._destination = destination
