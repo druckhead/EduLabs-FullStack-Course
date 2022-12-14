@@ -1,6 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from src.Homework.C1_Bus.busroute import BusRoute
 from src.Homework.C1_Bus.scheduledride import ScheduledRide
+from exceptions import *
 
 
 class BestBusCompany:
@@ -33,7 +34,17 @@ class BestBusCompany:
 
     def delete_route(self, line_number: str):
         self._validate_line_number(line_number)
+
+        route = self.__routes["line_num"][line_number]
+        origin = route.origin
+        destination = route.destination
+        stops = route.stops
+
         del self.__routes["line_num"][line_number]
+        del self.__routes["origin"][origin]
+        del self.__routes["destination"][destination]
+        for stop in stops:
+            del self.__routes["bus_stop"][stop]
 
     def update_route(self, line_number: str, origin: str = None, destination: str = None, stops: list[str] = None):
         self._validate_line_number(line_number)
@@ -69,7 +80,10 @@ class BestBusCompany:
                 raise KeyError()
             return self.__routes["bus_stop"][bus_stop]
 
+        raise MissingSearchKeyError()
 
 
-    def report_delay(self):
+
+    def report_delay(self, delay: timedelta):
         pass
+
