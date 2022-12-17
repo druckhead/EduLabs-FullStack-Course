@@ -35,8 +35,16 @@ class NotALineNumberError(BaseInputError):
     def __init__(self, arg):
         super().__init__(f"Invalid input of: {arg}. Expected numeric line number")
 
+class NotEnoughStopsError(BaseInputError):
+    def __init__(self, arg):
+        super.__init__(f"{arg} is not enough stops")
 
-class BaseKeyError(KeyError):
+class NotAValidDelayError(BaseInputError):
+    def __init__(self, arg):
+        super.__init__(f"{arg} is not a valid delay in minutes")
+
+
+class BaseKeyError(Exception):
     pass
 
 

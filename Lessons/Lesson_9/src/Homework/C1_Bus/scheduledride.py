@@ -50,5 +50,5 @@ class ScheduledRide:
                f"Delay: {self.delay}"
 
     def __repr__(self):
-        return f"<{self.__class__.__name__} Origin Time: {self.origin_time.time()}, " \
+        return f"<Ride Id: {self.ride_id} Origin Time: {self.origin_time.time()}, " \
                f"Destination Time: {self.destination_time.time()}, Delay: {self.delay}>"

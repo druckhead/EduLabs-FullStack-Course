@@ -19,10 +19,12 @@ class BestBusCompany:
             raise LineDoesntExistError(line_number)
 
     def add_route(self, line_num: str, origin: str, destination: str, stops: list[str]):
-        self._validate_line_number(line_num)
+        num_stops = len(stops)
+        if num_stops == 0:
+            raise NotEnoughStopsError(num_stops)
 
         new_route = BusRoute(line_num, origin, destination, stops)
-        self.__routes["line_num"] = {new_route.line_number: new_route}
+        self.__routes["line_num"][new_route.line_number] = new_route
         if new_route.origin not in self.__routes["origin"]:
             self.__routes["origin"][new_route.origin] = []
         self.__routes["origin"][new_route.origin].append(new_route)
@@ -42,22 +44,50 @@ class BestBusCompany:
         destination = route.destination
         stops = route.stops
 
-        del self.__routes["line_num"][line_number]
-        del self.__routes["origin"][origin]
-        del self.__routes["destination"][destination]
+        route_id_address = id(route)
+
+        self.__routes["line_num"].pop(line_number)
+
+        for o in self.__routes["origin"][origin]:
+            if id(o) == route_id_address:
+                poproute = self.__routes["origin"][origin].index(o)
+                break
+        self.__routes["origin"][origin].pop(poproute)
+        if len(self.__routes["origin"][origin]) == 0:
+            self.__routes["origin"].pop(origin)
+
+
+        for d in self.__routes["destination"][destination]:
+            if id(d) == route_id_address:
+                poproute = self.__routes["destination"][destination].index(d)
+                break
+        self.__routes["destination"][destination].pop(poproute)
+        if len(self.__routes["destination"][destination]) == 0:
+            self.__routes["destination"].pop(destination)
+
         for stop in stops:
-            del self.__routes["bus_stop"][stop]
+            for s in self.__routes["bus_stop"][stop]:
+                if id(s) == route_id_address:
+                    poproute = self.__routes["bus_stop"][stop].index(s)
+                    break
+            self.__routes["bus_stop"][stop].pop(poproute)
+            if len(self.__routes["bus_stop"][stop]) == 0:
+                self.__routes["bus_stop"].pop(stop)
+
 
     def update_route(self, line_number: str, origin: str = None, destination: str = None, stops: list[str] = None):
         self._validate_line_number(line_number)
 
-        route = self.__routes["line_number"][line_number]
+        route = self.__routes["line_num"][line_number]
+        self.delete_route(line_number)
         if origin is not None:
             route.origin = origin
         if destination is not None:
             route.destination = destination
         if stops is not None:
             route.stops = stops
+
+        self.add_route(line_number, route.origin, route.destination, route.stops)
 
     def add_scheduled_ride(self, line_number: str, origin_time: datetime, destination_time: datetime, driver_name: str):
         self._validate_line_number(line_number)
@@ -86,11 +116,11 @@ class BestBusCompany:
 
         raise MissingSearchKeyError()
 
-    def report_delay(self, line_number: str, ride_id: uuid4, delay: timedelta) -> None:
+    def report_delay(self, line_number: str, ride_id: str, delay: timedelta) -> None:
         self._validate_line_number(line_number)
         rides = self.__routes["line_num"][line_number].scheduled_rides
         for ride in rides:
-            if ride.ride_id == ride_id:
+            if str(ride.ride_id) == ride_id:
                 ride.delay = delay
                 return
         raise RideIDDoesntExistError(ride_id)

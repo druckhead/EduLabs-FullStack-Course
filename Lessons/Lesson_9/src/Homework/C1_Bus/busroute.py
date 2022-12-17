@@ -36,6 +36,10 @@ class BusRoute:
     def stops(self) -> list[str]:
         return self._stops
 
+    @stops.setter
+    def stops(self, stops) -> None:
+        self._stops = stops
+
     @property
     def scheduled_rides(self) -> list[ScheduledRide]:
         return self._scheduled_rides
