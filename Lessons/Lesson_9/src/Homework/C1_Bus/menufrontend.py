@@ -59,10 +59,8 @@ class MainMenu:
                                     match actions_choice:
                                         case '1':
                                             manager_menu.add_route()
-                                            pass
                                         case '2':
                                             manager_menu.delete_route()
-                                            pass
                                         case '3':
                                             manager_menu.update_route()
                                         case '4':
@@ -73,7 +71,6 @@ class MainMenu:
                                                 except ValueError:
                                                     print("Invalid Time")
                                                     sleep(1)
-                                            pass
                                         case '5':
                                             manager_menu.sign_out()
                                             break
@@ -98,10 +95,9 @@ class MainMenu:
                                                 print(r)
                                         else:
                                             print(route)
+                                        input("Press Enter to Continue")
                                     case '2':
-                                        # todo accept inputs and validate them before sending them as params in the functions
                                         passenger_menu.report_delay()
-                                        pass
                                     case '3':
                                         passenger_menu.sign_out()
                                         break
@@ -111,6 +107,7 @@ class MainMenu:
                                         continue
                             except BaseKeyError as inputErr2:
                                 print(inputErr2)
+                                _ = input("Press Enter to continue")
                     case '3':
                         main_menu.quit()
                         break
