@@ -5,7 +5,7 @@ from exceptions import *
 
 
 class BestBusCompany:
-    def __init__(self):
+    def __init__(self) -> None:
         self.__routes: dict[str, dict[str, BusRoute | list[BusRoute]]] = {
             "line_num": {},
             "origin": {},
@@ -13,11 +13,11 @@ class BestBusCompany:
             "bus_stop": {},
         }
 
-    def _validate_line_number(self, line_number: str):
+    def _validate_line_number(self, line_number: str) -> None:
         if line_number not in self.__routes["line_num"]:
             raise LineDoesntExistError(line_number)
 
-    def add_route(self, line_num: str, origin: str, destination: str, stops: list[str]):
+    def add_route(self, line_num: str, origin: str, destination: str, stops: list[str]) -> None:
         num_stops = len(stops)
         if num_stops == 0:
             raise NotEnoughStopsError(num_stops)
@@ -35,13 +35,15 @@ class BestBusCompany:
                 self.__routes["bus_stop"][stop] = []
             self.__routes["bus_stop"][stop].append(new_route)
 
-    def delete_route(self, line_number: str):
+    def delete_route(self, line_number: str) -> None:
         self._validate_line_number(line_number)
 
         route = self.__routes["line_num"][line_number]
         origin = route.origin
         destination = route.destination
         stops = route.stops
+
+        poproute = None
 
         route_id_address = id(route)
 
@@ -54,7 +56,6 @@ class BestBusCompany:
         self.__routes["origin"][origin].pop(poproute)
         if len(self.__routes["origin"][origin]) == 0:
             self.__routes["origin"].pop(origin)
-
 
         for d in self.__routes["destination"][destination]:
             if id(d) == route_id_address:
@@ -73,8 +74,8 @@ class BestBusCompany:
             if len(self.__routes["bus_stop"][stop]) == 0:
                 self.__routes["bus_stop"].pop(stop)
 
-
-    def update_route(self, line_number: str, origin: str = None, destination: str = None, stops: list[str] = None):
+    def update_route(self, line_number: str, origin: str = None, destination: str = None,
+                     stops: list[str] = None) -> None:
         self._validate_line_number(line_number)
 
         route = self.__routes["line_num"][line_number]
@@ -88,7 +89,8 @@ class BestBusCompany:
 
         self.add_route(line_number, route.origin, route.destination, route.stops)
 
-    def add_scheduled_ride(self, line_number: str, origin_time: datetime, destination_time: datetime, driver_name: str):
+    def add_scheduled_ride(self, line_number: str, origin_time: datetime, destination_time: datetime,
+                           driver_name: str) -> None:
         self._validate_line_number(line_number)
 
         new_ride = ScheduledRide(origin_time, destination_time, driver_name)
@@ -96,7 +98,7 @@ class BestBusCompany:
         route.scheduled_rides.append(new_ride)
 
     def search_route(self, line_num: str = None, origin: str = None, destination: str = None,
-                     bus_stop: str = None) -> BusRoute:
+                     bus_stop: str = None) -> BusRoute | list[BusRoute]:
         if line_num is not None:
             self._validate_line_number(line_num)
             return self.__routes["line_num"][line_num]

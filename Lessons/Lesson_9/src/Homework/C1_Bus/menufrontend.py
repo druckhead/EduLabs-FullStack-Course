@@ -9,21 +9,21 @@ from time import sleep
 
 
 class MainMenu:
-    def __init__(self):
+    def __init__(self) -> None:
         if os.path.exists("bus_company.pickle"):
             self._bus_company = self._load()
         else:
             self._bus_company = BestBusCompany()
 
     @staticmethod
-    def display_user_prompt():
+    def display_user_prompt() -> None:
         print("Are you a passenger or manager?\n"
               "1. manager\n"
               "2. passenger\n"
               "3. quit\n"
               ">>> ", end="")
 
-    def present(self):
+    def present(self) -> None:
         main_menu = Menu(self._bus_company)
         try:
             while True:
@@ -78,6 +78,7 @@ class MainMenu:
                                             print("Invalid input. Please Choose from the options provided.")
                                             sleep(1)
                                             continue
+                                    _ = input("Press Enter to continue")
                                 except BaseKeyError as inputErr1:
                                     print(inputErr1)
                     case '2':
@@ -95,7 +96,6 @@ class MainMenu:
                                                 print(r)
                                         else:
                                             print(route)
-                                        input("Press Enter to Continue")
                                     case '2':
                                         passenger_menu.report_delay()
                                     case '3':
@@ -107,7 +107,6 @@ class MainMenu:
                                         continue
                             except BaseKeyError as inputErr2:
                                 print(inputErr2)
-                                _ = input("Press Enter to continue")
                     case '3':
                         main_menu.quit()
                         break
@@ -115,12 +114,13 @@ class MainMenu:
                         print("Invalid input. Please Choose from the options provided.")
                         sleep(1)
                         continue
+                _ = input("Press Enter to continue")
         except KeyboardInterrupt:
             main_menu.quit()
             exit(0)
 
     @staticmethod
-    def _load():
+    def _load() -> BestBusCompany:
         with open("bus_company.pickle", 'rb') as fh:
             bus_company = pickle.load(fh)
 

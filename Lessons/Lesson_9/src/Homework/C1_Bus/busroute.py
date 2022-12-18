@@ -21,7 +21,7 @@ class BusRoute:
         return self._origin
 
     @origin.setter
-    def origin(self, new_origin: str):
+    def origin(self, new_origin: str) -> None:
         self._origin = new_origin
 
     @property
@@ -29,7 +29,7 @@ class BusRoute:
         return self._destination
 
     @destination.setter
-    def destination(self, new_destination: str):
+    def destination(self, new_destination: str) -> None:
         self._destination = new_destination
 
     @property
@@ -44,12 +44,12 @@ class BusRoute:
     def scheduled_rides(self) -> list[ScheduledRide]:
         return self._scheduled_rides
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Line #{self.line_number}\n" \
                f"Origin: {self.origin}\n" \
                f"Destination: {self.destination}\n" \
                f"Stops: {self.stops}\n" \
                f"Scheduled Rides: {self.scheduled_rides}"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<BusRoute Line #: {self.line_number}, Origin: {self.origin}, Destination: {self.destination}>"

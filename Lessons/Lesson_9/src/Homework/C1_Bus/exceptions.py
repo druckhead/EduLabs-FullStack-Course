@@ -28,7 +28,7 @@ class TooManyWrongPasswordAttemptsError(BasePasswordException):
         super().__init__(f"Maximum wrong sign-in attempts have been attempted.\nYou have not been signed in.")
 
 
-class BaseInputError(ValueError):
+class BaseInputError(Exception):
     pass
 
 class NotALineNumberError(BaseInputError):

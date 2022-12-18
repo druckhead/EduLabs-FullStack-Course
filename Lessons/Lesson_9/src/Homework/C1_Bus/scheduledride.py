@@ -3,7 +3,7 @@ from uuid import uuid4
 
 
 class ScheduledRide:
-    def __init__(self, origin_time: datetime, destination_time: datetime, driver_name: str):
+    def __init__(self, origin_time: datetime, destination_time: datetime, driver_name: str) -> None:
         self._ride_id = uuid4()
         self._origin_time = origin_time
         self._destination_time = destination_time
@@ -19,7 +19,7 @@ class ScheduledRide:
         return self._origin_time
 
     @origin_time.setter
-    def origin_time(self, new_time: datetime):
+    def origin_time(self, new_time: datetime) -> None:
         self._origin_time = new_time
 
     @property
@@ -27,7 +27,7 @@ class ScheduledRide:
         return self._destination_time
 
     @destination_time.setter
-    def destination_time(self, new_time: datetime):
+    def destination_time(self, new_time: datetime) -> None:
         self._destination_time = new_time
 
     @property
@@ -39,16 +39,16 @@ class ScheduledRide:
         return self._delay
 
     @delay.setter
-    def delay(self, delay: timedelta):
+    def delay(self, delay: timedelta) -> None:
         self._delay = delay
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Ride ID: {self.ride_id}\n" \
                f"Origin Time: {self.origin_time}\n" \
                f"Destination Time: {self.destination_time}\n" \
                f"Driver Name: {self.driver_name}" \
                f"Delay: {self.delay}"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Ride Id: {self.ride_id} Origin Time: {self.origin_time.time()}, " \
                f"Destination Time: {self.destination_time.time()}, Delay: {self.delay}>"
