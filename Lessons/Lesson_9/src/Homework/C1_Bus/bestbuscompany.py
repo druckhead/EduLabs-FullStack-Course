@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from uuid import uuid4
 from busroute import BusRoute
 from scheduledride import ScheduledRide
 from exceptions import *
