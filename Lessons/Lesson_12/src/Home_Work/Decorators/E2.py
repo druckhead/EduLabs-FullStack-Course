@@ -5,6 +5,7 @@ from datetime import datetime, time
 class BankExceptions(Exception):
     pass
 
+
 class BankClosedError(BankExceptions):
     pass
 
@@ -14,29 +15,33 @@ class Bank:
         self.bank_name = bank_name
 
     @staticmethod
-    def working_hours_only(func: Callable):
-        def wrapped_callable(*args, **kwargs):
-            curr_time = datetime.utcnow().time()
-            open_time = time(hour=9, minute=0, second=0)
-            close_time = time(hour=17, minute=0, second=0)
-            curr_day = curr_time.strftime("%a")
-            days = ['Sun', "Mon", "Tue", "Wed", "Thu"]
-            if curr_day not in days:
-                raise BankClosedError(f"Today is {curr_day}. The Bank is closed.\nCome back on {days[0]}")
-            if open_time <= curr_time <= close_time:
-                result = func(*args, **kwargs)
-                return result
-            else:
-                raise BankClosedError(f"Time: {curr_time.strftime('%H:%M:%S')}\nBank is closed. Open Hours: {open_time}-{close_time}")
+    def working_hours_only(days: list[str], open_time: time, close_time: time):
+        def wrapper(func: Callable):
+            def decorator(*args, **kwargs):
+                curr_time = datetime.utcnow().time()
+                curr_day = curr_time.strftime("%a")
+                if curr_day not in days:
+                    raise BankClosedError(
+                        f"Today is {curr_day}. The Bank is closed.\n"
+                        f"Come back on {days[0]} between {open_time}-{close_time}")
+                if open_time <= curr_time <= close_time:
+                    result = wrapper(*args, **kwargs)
+                    return result
+                else:
+                    raise BankClosedError(
+                        f"Time: {curr_time.strftime('%H:%M:%S')}\nBank is closed.\n"
+                        f"Come back tomorrow between: {open_time}-{close_time}")
 
-        return wrapped_callable
+            return decorator
 
-    @working_hours_only
+        return wrapper
+
+    @working_hours_only(["Sun", "Mon", "Tue", "Wed", "Thu", "Fri"], time(hour=9), time(hour=17))
     def withdraw(self, amount):
         print("called withdraw", amount)
         return amount
 
-    @working_hours_only
+    @working_hours_only(["Sun", "Mon", "Tue", "Wed", "Thu", "Fri"], time(hour=9), time(hour=17))
     def deposit(self, amount):
         print("called deposit", amount)
         return amount
