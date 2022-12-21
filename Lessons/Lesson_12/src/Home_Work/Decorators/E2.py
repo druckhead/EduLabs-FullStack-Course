@@ -25,7 +25,7 @@ class Bank:
                         f"Today is {curr_day}. The Bank is closed.\n"
                         f"Come back on {days[0]} between {open_time}-{close_time}")
                 if open_time <= curr_time <= close_time:
-                    result = wrapper(*args, **kwargs)
+                    result = func(*args, **kwargs)
                     return result
                 else:
                     raise BankClosedError(
