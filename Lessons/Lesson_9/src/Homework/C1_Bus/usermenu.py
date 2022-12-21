@@ -3,7 +3,7 @@ from datetime import timedelta, datetime
 from time import sleep
 from menubackend import Menu
 from exceptions import *
-from src.Homework.C1_Bus.busroute import BusRoute
+from busroute import BusRoute
 
 
 class PassengerMenu(Menu):
