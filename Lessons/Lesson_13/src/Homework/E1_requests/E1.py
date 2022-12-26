@@ -1,5 +1,6 @@
-from concurrent.futures import ThreadPoolExecutor
-
+from concurrent.futures import ThreadPoolExecutor, wait
+import nameslist
+from time import perf_counter
 import requests
 from datetime import datetime
 import pytz
@@ -100,29 +101,41 @@ class Nationalize:
 
     def info(self, name: str) -> str:
         most_probable_country = self.__get_country_json(name)
-        return f"Most probable country: {self._nationalize_by_name(most_probable_country)}\n" \
+        return f"Name: {name}\n" \
+               f"Most probable country: {self._nationalize_by_name(most_probable_country)}\n" \
                f"Continent: {self._nationalize_by_continent(most_probable_country)}\n" \
                f"Language(s) spoken: {_list_as_string(self._language_spoken(most_probable_country))}\n" \
                f"Timezones: {_list_as_string(self._time_zones(most_probable_country))}"
 
 
 if __name__ == '__main__':
+    start = perf_counter()
     n = Nationalize()
-    names = ["daniel", "kaia", "john"]
+    names = nameslist.names[:10]
     countries = []
-    for name in names:
-        with ThreadPoolExecutor(max_workers=5) as pool:
-            future = pool.submit(n.info, name)
-            countries.append((name, future))
 
-    last = countries[-1]
-    for country in countries:
-        print(f"Name: {country[0]}")
-        try:
-            print(country[1].result())
-            if last != country:
-                print()
-        except NameNotFound as no_name:
-            print(f"{no_name}\n")
-        except CountryIdNotFound as no_country:
-            print(f"{no_country}\n")
+    with ThreadPoolExecutor(max_workers=5) as pool:
+        for name in names:
+            future = pool.submit(n.info, name)
+            countries.append(future)
+        last = countries[-1]
+        succeed_count = 0
+        for country in countries:
+            try:
+                print(country.result())
+                if last != country:
+                    print()
+            except NameNotFound as no_name:
+                print(f"{no_name}\n")
+            except CountryIdNotFound as no_country:
+                print(f"{no_country}\n")
+            else:
+                succeed_count += 1
+
+    end = perf_counter()
+    runtime = end - start
+
+    print(f"\nStats\n"
+          f"requests succeeded: {succeed_count}\n"
+          f"requests failed: {len(countries) - succeed_count}\n"
+          f"Total runtime: [{runtime}s]")
