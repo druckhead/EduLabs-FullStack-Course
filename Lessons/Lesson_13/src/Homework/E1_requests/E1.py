@@ -86,7 +86,7 @@ class Nationalize:
 
     @staticmethod
     def _time_zones(country_dict) -> list[str]:
-        time_format = "%H:%M:%S %Z%z"
+        time_format = "%H:%M:%S UTC%z"
 
         times: list[str] = []
         timezones: list[str] = country_dict.get("timezones")
@@ -114,7 +114,7 @@ if __name__ == '__main__':
     names = nameslist.names[:10]
     countries = []
 
-    with ThreadPoolExecutor(max_workers=5) as pool:
+    with ThreadPoolExecutor(max_workers=10) as pool:
         for name in names:
             future = pool.submit(n.info, name)
             countries.append(future)
@@ -125,6 +125,9 @@ if __name__ == '__main__':
                 print(country.result())
                 if last != country:
                     print()
+            except ConnectionError:
+                print("No Connection")
+                break
             except NameNotFound as no_name:
                 print(f"{no_name}\n")
             except CountryIdNotFound as no_country:
@@ -132,10 +135,12 @@ if __name__ == '__main__':
             else:
                 succeed_count += 1
 
-    end = perf_counter()
-    runtime = end - start
+        end = perf_counter()
+        runtime = end - start
 
-    print(f"\nStats\n"
-          f"requests succeeded: {succeed_count}\n"
-          f"requests failed: {len(countries) - succeed_count}\n"
-          f"Total runtime: [{runtime}s]")
+        if succeed_count:
+            print(f"\nStats\n"
+                  f"requests succeeded: {succeed_count}\n"
+                  f"requests failed: {len(countries) - succeed_count}")
+
+        print(f"Total runtime: [{runtime}s]")
