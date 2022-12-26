@@ -1,3 +1,5 @@
+from concurrent.futures import ThreadPoolExecutor
+
 import requests
 from datetime import datetime
 import pytz
@@ -96,27 +98,31 @@ class Nationalize:
 
         return times
 
-    def info(self, name: str) -> None:
+    def info(self, name: str) -> str:
         most_probable_country = self.__get_country_json(name)
-        print(f"Most probable country: {self._nationalize_by_name(most_probable_country)}\n"
-              f"Continent: {self._nationalize_by_continent(most_probable_country)}\n"
-              f"Language(s) spoken: {_list_as_string(self._language_spoken(most_probable_country))}\n"
-              f"Timezones: {_list_as_string(self._time_zones(most_probable_country))}")
+        return f"Most probable country: {self._nationalize_by_name(most_probable_country)}\n" \
+               f"Continent: {self._nationalize_by_continent(most_probable_country)}\n" \
+               f"Language(s) spoken: {_list_as_string(self._language_spoken(most_probable_country))}\n" \
+               f"Timezones: {_list_as_string(self._time_zones(most_probable_country))}"
 
 
 if __name__ == '__main__':
     n = Nationalize()
-    person_name = input("Enter a name: ")
-    for i in range(100):
+    names = ["daniel", "kaia", "john"]
+    countries = []
+    for name in names:
+        with ThreadPoolExecutor(max_workers=5) as pool:
+            future = pool.submit(n.info, name)
+            countries.append((name, future))
+
+    last = countries[-1]
+    for country in countries:
+        print(f"Name: {country[0]}")
         try:
-            n.info(person_name)
-        except TooManyRedirects as redirect_err:
-            print(redirect_err)
-        except Timeout as timeout_err:
-            print(timeout_err)
-        except NameNotFound as name_err:
-            print(name_err)
-        except CountryIdNotFound as country_id_err:
-            print(country_id_err)
-        else:
-            print("\nSucceeded\n")
+            print(country[1].result())
+            if last != country:
+                print()
+        except NameNotFound as no_name:
+            print(f"{no_name}\n")
+        except CountryIdNotFound as no_country:
+            print(f"{no_country}\n")

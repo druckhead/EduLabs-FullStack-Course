@@ -9,3 +9,8 @@ class NameNotFound(RequestException):
 class CountryIdNotFound(RequestException):
     def __init__(self, response: dict, country_id: str):
         super().__init__(f"Error Code: {response['status']}\nCountry ID:'{country_id}' {response['message']}")
+
+
+class TooManyRequests(RequestException):
+    def __init__(self):
+        super().__init__(f"Too many request try again later.")
