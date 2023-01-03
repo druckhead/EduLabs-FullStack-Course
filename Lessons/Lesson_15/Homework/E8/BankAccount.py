@@ -1,4 +1,26 @@
 import threading
+from functools import wraps
+
+
+def lock_process(lock_type: str):
+    def lock_process_wrapper(func):
+        @wraps(func)
+        def lock_process_decorator(*args, **kwargs):
+            def get_lock(self):
+                lock = None
+                if lock_type == "write":
+                    lock = self._wlock
+                elif lock_type == "read":
+                    lock = self._rlock
+                return lock
+
+            deposit_lock = get_lock(args[0])
+            with deposit_lock:
+                func(*args, **kwargs)
+
+        return lock_process_decorator
+
+    return lock_process_wrapper
 
 
 class BankAccount:
@@ -13,34 +35,38 @@ class BankAccount:
         self._rlock = threading.Lock()
         self._wlock = threading.Lock()
 
-    def deposit(self, amount: int):
-        with self._wlock:
-            self.balance += amount
-            self.transactions_list.append(('deposit', amount))
+    @lock_process(lock_type="write")
+    def deposit(self, amount: int) -> None:
+        """
+        Deposit the amount in to the account balance
+        :param amount:
+        """
+        self.balance += amount
+        self.transactions_list.append(('deposit', amount))
 
+    @lock_process(lock_type="write")
     def withdraw(self, amount: int):
-        with self._wlock:
-            if self.balance - amount < self.__CREDIT_LIMIT:
-                raise ValueError(f"{amount} causes to go under credit limit"
-                                 f": {self.__CREDIT_LIMIT}")
-            self.balance -= amount
-            self.transactions_list.append(('withdraw', amount))
+        if self.balance - amount < self.__CREDIT_LIMIT:
+            raise ValueError(f"{amount} causes to go under credit limit"
+                             f": {self.__CREDIT_LIMIT}")
+        self.balance -= amount
+        self.transactions_list.append(('withdraw', amount))
 
+    @lock_process(lock_type="read")
     def get_balance(self):
-        with self._rlock:
-            return self.balance
+        return self.balance
 
 
 if __name__ == '__main__':
     my_account = BankAccount(123456, "Israel Israeli")
 
 
-    def multiple_transactions_deposit(account):
+    def multiple_transactions_deposit(account: BankAccount):
         for i in range(100, 2000000, 10):
             account.deposit(i)
 
 
-    def multiple_transactions_withdraw(account):
+    def multiple_transactions_withdraw(account: BankAccount):
         for i in range(100, 2000000, 10):
             account.withdraw(i)
 
