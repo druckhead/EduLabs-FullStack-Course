@@ -67,10 +67,10 @@ if __name__ == '__main__':
     try:
         if args.scan is True:
             vt.scan_url(args.urls)
-            vt.url_analysis(args.urls)
+            vt.url_analysis(args.urls, days=args.days)
         else:
             try:
-                vt.url_analysis(args.urls)
+                vt.url_analysis(args.urls, days=args.days)
             except AnalysisExpired as exp:
                 print(exp)
                 vt.scan_url(args.urls)
