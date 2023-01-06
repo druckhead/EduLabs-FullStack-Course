@@ -3,16 +3,11 @@ import base64
 import dotenv
 import requests
 import urllib.parse
+from datetime import datetime, timedelta, timezone
+import pytz
+from exceptions import *
 
 dotenv.load_dotenv()
-
-
-class VirusTotalExceptions(Exception):
-    pass
-
-
-class BadRequest(VirusTotalExceptions):
-    pass
 
 
 def _encode_url(url: str):
@@ -25,12 +20,15 @@ def _encode_url(url: str):
 
 
 class VirusTotal:
+    _base_url = ""
+    _base_headers = {
+        "accept": "application/json",
+        "x-apikey": os.getenv("KEY"),
+    }
+
     def __init__(self):
-        self._base_url = ""
-        self._base_headers = {
-            "accept": "application/json",
-            "x-apikey": os.getenv("KEY"),
-        }
+        # link -> data
+        self._cache: dict[str, dict] = {}
 
     def scan_url(self, url: str):
         request_url = "https://www.virustotal.com/api/v3/urls"
@@ -41,11 +39,25 @@ class VirusTotal:
 
         response = requests.post(request_url, data=payload, headers=headers)
         if response.status_code == 200:
-            return response.json()
+            if url not in self._cache:
+                self._cache[url] = response.json()
+            return self._cache[url]
         else:
             raise BadRequest()
 
-    def url_analysis(self, url: str):
+    def url_analysis(self, url: str, days=180):
+        if url in self._cache:
+            last_analysis_epoch = self._cache[url]['data']['attributes']['last_analysis_date']
+            # convert epoch to utc and make datetime tz aware
+            last_analysis_utc = datetime.utcfromtimestamp(last_analysis_epoch).astimezone(pytz.UTC)
+            now = datetime.utcnow().astimezone(tz=pytz.UTC)
+            # if param days past since last analysis, clear cached link
+            if now >= last_analysis_utc + timedelta(days=days):
+                self._cache.pop(url)
+                raise AnalysisExpired()
+
+            return self._cache[url]
+
         url_id = _encode_url(url)
         base_url = "https://www.virustotal.com/api/v3/urls"
 
@@ -54,25 +66,8 @@ class VirusTotal:
 
         response = requests.get(request_url, headers=headers)
         if response.status_code == 200:
-            return response.json()
+            if url not in self._cache:
+                self._cache[url] = response.json()
+            return self._cache[url]
         else:
             raise BadRequest()
-
-    def rescan(self, url: str):
-        url_id = _encode_url(url)
-        request_url = f"https://www.virustotal.com/api/v3/urls/{url_id}/analyse"
-        headers = self._base_headers
-
-        response = requests.post(request_url, headers=headers)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            raise BadRequest()
-
-
-if __name__ == '__main__':
-    vt = VirusTotal()
-    url = "https://www.google.com"
-    # print(vt.url_analysis(url))
-    # print(vt.scan_url(url))
-    # print(vt.rescan(url))
