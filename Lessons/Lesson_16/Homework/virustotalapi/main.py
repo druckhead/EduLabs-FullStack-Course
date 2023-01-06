@@ -77,8 +77,6 @@ if __name__ == '__main__':
                 vt.url_analysis(args.urls, days=args.days)
             except BadRequest as err:
                 print(err)
-                vt.scan_url(args.urls)
-                vt.url_analysis(args.urls)
     except BadRequest as badrequest:
         print(badrequest)
     finally:
