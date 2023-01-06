@@ -41,7 +41,7 @@ class VirusTotal:
         if response.status_code == 200:
             return response.json()
         else:
-            raise BadRequest()
+            raise BadRequest(response=response)
 
     def url_analysis(self, url: str, days=180):
         if url in self._cache:
@@ -52,7 +52,9 @@ class VirusTotal:
             # if param days past since last analysis, clear cached link
             if now >= last_analysis_utc + timedelta(days=days):
                 self._cache.pop(url)
-                raise AnalysisExpired()
+                raise AnalysisExpired(url=url,
+                                      last_analysis=last_analysis_utc,
+                                      expire_date=last_analysis_utc + timedelta(days=days))
 
             return self._cache[url]
 
@@ -68,4 +70,4 @@ class VirusTotal:
                 self._cache[url] = response.json()
             return self._cache[url]
         else:
-            raise BadRequest()
+            raise BadRequest(response=response)
