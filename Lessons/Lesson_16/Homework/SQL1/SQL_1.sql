@@ -230,12 +230,13 @@ SELECT
 	DISTINCT ON
 	(education) education,
 	id,
-	min(date_part('year', (SELECT current_timestamp)) - year_birth) AS min_customer_age
+	date_part('year', (SELECT current_timestamp)) - year_birth AS min_customer_age
 FROM
 	superstore_data sd
 GROUP BY
 	education,
-	id
+	id,
+	year_birth
 ORDER BY
 	education,
 	min(date_part('year', (SELECT current_timestamp)) - year_birth);
