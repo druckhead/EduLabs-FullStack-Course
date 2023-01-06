@@ -1,5 +1,5 @@
 from requests import Response
-from datetime import datetime, timedelta
+from datetime import datetime
 
 
 class VirusTotalExceptions(Exception):

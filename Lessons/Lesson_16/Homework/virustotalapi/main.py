@@ -1,6 +1,6 @@
 import os
-from virustotal import VirusTotal
-from exceptions import *
+from Lesson_16.Homework.virustotalapi.analyzer.virustotal_analyzer import VirusTotal
+from Lesson_16.Homework.virustotalapi.exceptions.exceptions import *
 import argparse
 import pickle
 
@@ -44,7 +44,7 @@ if __name__ == '__main__':
     # end define args
 
     # Perform the parse
-    args = parser.parse_args(["https://www.google.com"])
+    args = parser.parse_args(["https://www.zivattiassgoogle.com", '-d', '-20'])
     
     print(f"urls={args.urls}", f"apikey={args.apikey}", f"scan={args.scan}", f"verbose={args.verbose}",
           f"days={args.days}", sep='\n')
