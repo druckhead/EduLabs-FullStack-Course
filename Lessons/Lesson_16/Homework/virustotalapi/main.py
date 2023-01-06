@@ -74,6 +74,7 @@ if __name__ == '__main__':
             except AnalysisExpired as exp:
                 print(exp)
                 vt.scan_url(args.urls)
+                vt.url_analysis(args.urls, days=args.days)
             except BadRequest as err:
                 print(err)
                 vt.scan_url(args.urls)
