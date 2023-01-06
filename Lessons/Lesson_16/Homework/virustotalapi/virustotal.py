@@ -39,9 +39,7 @@ class VirusTotal:
 
         response = requests.post(request_url, data=payload, headers=headers)
         if response.status_code == 200:
-            if url not in self._cache:
-                self._cache[url] = response.json()
-            return self._cache[url]
+            return response.json()
         else:
             raise BadRequest()
 
