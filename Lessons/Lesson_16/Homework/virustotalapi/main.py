@@ -1,6 +1,6 @@
 import os
-from Lesson_16.Homework.virustotalapi.analyzer.virustotal_analyzer import VirusTotal
-from Lesson_16.Homework.virustotalapi.exceptions.exceptions import *
+from virustotal_analyzer import VirusTotal
+from exceptions import *
 import argparse
 import pickle
 
