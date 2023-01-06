@@ -5,7 +5,7 @@ import requests
 import urllib.parse
 from datetime import datetime, timedelta
 import pytz
-from Lessons.Lesson_16.Homework.virustotalapi.exceptions import exceptions
+from Lessons.Lesson_16.Homework.virustotalapi.exceptions.exceptions import *
 
 dotenv.load_dotenv()
 
