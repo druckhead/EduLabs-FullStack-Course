@@ -2,6 +2,7 @@ import argparse
 import base64
 import os
 import urllib.parse
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta
 from json import dump, load
 from time import sleep
@@ -9,9 +10,8 @@ from time import sleep
 import dotenv
 import pytz
 import requests
-from tqdm import tqdm
-
 from exceptions import *
+from tqdm import tqdm
 
 dotenv.load_dotenv()
 
@@ -134,6 +134,7 @@ class VirusTotal:
 
         if self._args.scan:
             self._scan_urls(urls=self._args.urls)
+
         reputatuons = self._url_analysis(urls=self._args.urls)
 
         print(*reputatuons, sep="\n")
@@ -169,11 +170,11 @@ class VirusTotal:
         if self._args.verbose:
             print(f"Starting to fetch analysis for url {url}")
 
-        if url in self._cache:
+        if url in self._cache and self._args.scan is False:
 
             if self._args.verbose:
                 print(f"fetching from cache")
-            sleep(0.1)
+                
             last_analysis_epoch = self._cache[url]["data"]["attributes"][
                 "last_analysis_date"
             ]
@@ -256,11 +257,15 @@ class VirusTotal:
         if self._args.verbose:
             print(f"Starting to scan urls {urls}")
 
-        for url in tqdm(urls):
-            try:
-                self._scan_single_url(url=url, headers=headers)
-            except BadRequest as bad_scan_request:
-                print(bad_scan_request)
+        with tqdm(urls, total=len(urls), desc="scanning") as urls_progress:
+            with ThreadPoolExecutor() as executor:
+                futures = []
+                for url in urls:
+                    futures.append(executor.submit(self._scan_single_url, url, headers))
+
+                for future in as_completed(futures):
+                    urls_progress.update()
+                    sleep(0.001)
 
         if self._args.verbose:
             print(f"Done scanning urls {urls}")
@@ -274,32 +279,40 @@ class VirusTotal:
             headers["x-apikey"] = self._args.apikey
 
         flag = None
-        for url in tqdm(urls, desc="urls"):
-            try:
-                score = self._get_single_analysis(url=url, headers=headers)
-            except AnalysisDataDoesNotExist as analysis_does_not_exist:
-                flag = True
-                print(analysis_does_not_exist)
-            except AnalysisExpired as analysis_expired:
-                flag = True
-                print(analysis_expired)
-            else:
-                scores.append((url, score))
-
-            if flag:
-                try:
-                    scan_headers = headers.copy()
-                    scan_headers["content-type"] = "application/x-www-form-urlencoded"
-                    self._scan_single_url(url=url, headers=scan_headers)
-                except BadRequest as bad_scan_request:
-                    print(bad_scan_request)
-                else:
+        
+        with tqdm(urls, desc="getting analysis") as urls_progress:
+            with ThreadPoolExecutor() as executor:
+                futures = []
+                for url in urls:
                     try:
-                        self._get_single_analysis(url=url, headers=headers)
-                    except BadRequest as bad_analysis_request:
-                        print(bad_analysis_request)
-
-            sleep(0.001)
+                        future = executor.submit(self._get_single_analysis, url, headers)
+                    except future.exception as future_exception:
+                        if isinstance(future_exception, AnalysisDataDoesNotExist) or isinstance(future_exception, AnalysisExpired):
+                            flag = True
+                            print(future_exception)
+                    else:
+                        futures.append(future)
+                    
+                    if flag:
+                        scan_headers = headers.copy()
+                        scan_headers["content-type"] = "application/x-www-form-urlencoded"
+                        try:
+                            future = executor.submit(self._scan_single_url, url, scan_headers)
+                        except future.exception as bad_scan_request:
+                            print(bad_scan_request)
+                        else:
+                            futures.append(future)
+                            try:
+                                future = executor.submit(self._get_single_analysis, url, headers)
+                            except future.exception as bad_analysis_request:
+                                print(bad_analysis_request)
+                            else:
+                                futures.append(future)
+                
+                for future in as_completed(futures):
+                    scores.append((url, future.result()))
+                    urls_progress.update()
+                    sleep(0.001)
 
         return scores
 
