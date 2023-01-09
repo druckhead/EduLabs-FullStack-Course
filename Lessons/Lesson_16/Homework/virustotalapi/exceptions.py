@@ -12,6 +12,10 @@ class BadRequest(VirusTotalExceptions):
         super().__init__(f"Request received bad response from server\n"
                          f"{response.status_code}: {response.text}"
                          )
+        
+class AnalysisDataDoesNotExist(VirusTotalExceptions):
+    def __init__(self, url: str) -> None:
+        super().__init__(f"No analysis found for: {url}")
 
 
 class AnalysisExpired(VirusTotalExceptions):
@@ -19,6 +23,5 @@ class AnalysisExpired(VirusTotalExceptions):
         super().__init__(f"Cache for: {url} expired. "
                          f"{abs((last_analysis - expire_date).days)} days ago.\n"
                          f"Last analysis date: {last_analysis}\n"
-                         f"Expire date: {expire_date}\n"
-                         f"New scan will commence."
+                         f"Expire date: {expire_date}"
                          )
