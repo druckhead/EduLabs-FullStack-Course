@@ -95,16 +95,7 @@ class VirusTotal:
             "-i", action="store_true", help="Prompt before removal"
         )
         # end define args
-        self._args = self._parser.parse_args(
-            [
-                "https://www.google.com",
-                "https://www.youtube.com",
-                "https://github.com",
-                "-v",
-                '-k',
-                '2dbb81a2b4371095db1dec5d886f84bb585a558f36d0b2ad35589301940da3a6'
-            ]
-        )
+        self._args = self._parser.parse_args()
         if self._args.verbose:
             print(
                 self._args.urls,
@@ -116,11 +107,36 @@ class VirusTotal:
                 self._args.i,
             )
 
+        if self._args.clear:
+            choice = None
+            if self._args.i:
+                choice = (
+                    input("are you sure you want to clear the cache? (y/n)\n" ">>> ")
+                    .lower()
+                    .strip()
+                )
+                while "y" != choice != "n":
+                    print(f"choice {choice} not available.")
+                    choice = (
+                        input(
+                            "are you sure you want to clear the cache? (y/n)\n" ">>> "
+                        )
+                        .lower()
+                        .strip()
+                    )
+            if choice == "y":
+                keys = list(self._cache.keys())
+                if len(keys) != 0:
+                    for key in keys:
+                        self._cache.pop(key)
+                if self._args.verbose:
+                    print("deleted all cached urls.")
+
         if self._args.scan:
             self._scan_urls(urls=self._args.urls)
         reputatuons = self._url_analysis(urls=self._args.urls)
-        
-        print(*reputatuons, sep='\n')
+
+        print(*reputatuons, sep="\n")
 
         # save the cached urls
         try:
@@ -129,17 +145,18 @@ class VirusTotal:
         except Exception as exception:
             print("Unknown error occured")
             print(exception)
-    
+
     def _get_analysis_score(self, url: str) -> int:
         """
         Calculate the analysis score from VirusTotal last_analysis_stats
         "param
         """
-        
-        reputation = self._cache.get(url).get('data').get('attributes').get('reputation')
-    
+
+        reputation = (
+            self._cache.get(url).get("data").get("attributes").get("reputation")
+        )
+
         return reputation
-        
 
     def _get_single_analysis(self, url: str, headers: dict) -> int:
         """
@@ -230,12 +247,11 @@ class VirusTotal:
         :param urls: a list of urls to scan
         :return: None
         """
-        
-        headers = self._base_headers.copy()
-        
-        if self._args.apikey is not None:
-                headers['x-apikey'] = self._args.apikey
 
+        headers = self._base_headers.copy()
+
+        if self._args.apikey is not None:
+            headers["x-apikey"] = self._args.apikey
 
         if self._args.verbose:
             print(f"Starting to scan urls {urls}")
@@ -251,12 +267,12 @@ class VirusTotal:
 
     def _url_analysis(self, urls: list[str]) -> list[tuple[str, int]]:
         scores: list[tuple[str, int]] = []
-        
+
         headers = self._base_headers.copy()
-        
+
         if self._args.apikey is not None:
-            headers['x-apikey'] = self._args.apikey
-        
+            headers["x-apikey"] = self._args.apikey
+
         flag = None
         for url in tqdm(urls, desc="urls"):
             try:
@@ -273,7 +289,7 @@ class VirusTotal:
             if flag:
                 try:
                     scan_headers = headers.copy()
-                    scan_headers['content-type'] = "application/x-www-form-urlencoded"
+                    scan_headers["content-type"] = "application/x-www-form-urlencoded"
                     self._scan_single_url(url=url, headers=scan_headers)
                 except BadRequest as bad_scan_request:
                     print(bad_scan_request)
@@ -284,7 +300,7 @@ class VirusTotal:
                         print(bad_analysis_request)
 
             sleep(0.001)
-        
+
         return scores
 
 
