@@ -125,12 +125,7 @@ class VirusTotal:
                         .strip()
                     )
             if choice == "y":
-                keys = list(self._cache.keys())
-                if len(keys) != 0:
-                    for key in keys:
-                        self._cache.pop(key)
-                if self._args.verbose:
-                    print("deleted all cached urls.")
+                self._clear_cache()
 
         if self._args.scan:
             self._scan_urls(urls=self._args.urls)
@@ -147,7 +142,15 @@ class VirusTotal:
             print("Unknown error occured")
             print(exception)
 
-    def _get_analysis_score(self, url: str) -> int:
+    def _clear_cache(self):
+        keys = list(self._cache.keys())
+        if len(keys) != 0:
+            for key in keys:
+                self._cache.pop(key)
+        if self._args.verbose:
+            print("deleted all cached urls.")
+
+    def _get_analysis_score(self, url: str) -> tuple[str, int]:
         """
         Calculate the analysis score from VirusTotal last_analysis_stats
         "param
@@ -157,7 +160,7 @@ class VirusTotal:
             self._cache.get(url).get("data").get("attributes").get("reputation")
         )
 
-        return reputation
+        return url, reputation
 
     def _get_single_analysis(self, url: str, headers: dict) -> int:
         """
@@ -196,7 +199,6 @@ class VirusTotal:
 
             if self._args.verbose:
                 print(f"done fetching analysis for url {url}")
-
         else:
             if self._args.verbose:
                 print(
@@ -215,6 +217,8 @@ class VirusTotal:
                     self._cache[url] = response.json()
             elif response.status_code == 404:
                 raise AnalysisDataDoesNotExist(url=url)
+            elif response.status_code == 429:
+                raise QuoataReachedError(response=response)
             else:
                 raise BadRequest(response=response)
 
@@ -236,6 +240,8 @@ class VirusTotal:
         payload = f"url={urllib.parse.quote(url, safe='', encoding='utf8')}"
 
         response = requests.post(self._base_url, data=payload, headers=headers)
+        if response.status_code == 429:
+            raise QuoataReachedError(response=response)
         if response.status_code != 200:
             raise BadRequest(response=response)
 
@@ -262,10 +268,10 @@ class VirusTotal:
                 futures = []
                 for url in urls:
                     futures.append(executor.submit(self._scan_single_url, url, headers))
+                    sleep(0.001)
 
                 for future in as_completed(futures):
-                    urls_progress.update()
-                    sleep(0.001)
+                    urls_progress.update(1)
 
         if self._args.verbose:
             print(f"Done scanning urls {urls}")
@@ -284,45 +290,56 @@ class VirusTotal:
             with ThreadPoolExecutor() as executor:
                 futures = []
                 for url in urls:
+                    future = executor.submit(self._get_single_analysis, url, headers)
+                    futures.append(future)
+                    sleep(0.001)
+
+                for future in as_completed(futures):
                     try:
-                        future = executor.submit(
-                            self._get_single_analysis, url, headers
-                        )
-                    except future.exception as future_exception:
-                        if isinstance(
-                            future_exception, AnalysisDataDoesNotExist
-                        ) or isinstance(future_exception, AnalysisExpired):
-                            flag = True
-                            print(future_exception)
+                        score = future.result()
+                    except QuoataReachedError as quota_reached:
+                        print(quota_reached)
+                        print(f"quiting program")
+                        exit(0)
+                    except AnalysisDataDoesNotExist as no_valid_analysis:
+                        flag = True
+                        print(no_valid_analysis)
+                    except AnalysisExpired as expired:
+                        flag = True
+                        print(expired)
+                    except BadRequest as bad_request:
+                        print(bad_request)
                     else:
-                        futures.append(future)
+                        scores.append(score)
+                        urls_progress.update(1)
 
                     if flag:
                         scan_headers = headers.copy()
                         scan_headers[
                             "content-type"
                         ] = "application/x-www-form-urlencoded"
+
                         try:
-                            future = executor.submit(
-                                self._scan_single_url, url, scan_headers
-                            )
-                        except future.exception as bad_scan_request:
+                            self._scan_single_url(url=url, headers=scan_headers)
+                        except QuoataReachedError as quota_reached:
+                            print(quota_reached)
+                            print("quiting program")
+                            exit(0)
+                        except BadRequest as bad_scan_request:
                             print(bad_scan_request)
                         else:
-                            futures.append(future)
                             try:
-                                future = executor.submit(
-                                    self._get_single_analysis, url, headers
+                                score = self._get_single_analysis(
+                                    url=url, headers=headers
                                 )
-                            except future.exception as bad_analysis_request:
+                            except QuoataReachedError as quota_reached:
+                                print(quota_reached)
+                                print("quiting program")
+                                exit(0)
+                            except BadRequest as bad_analysis_request:
                                 print(bad_analysis_request)
                             else:
-                                futures.append(future)
-
-                for future in as_completed(futures):
-                    scores.append((url, future.result()))
-                    urls_progress.update()
-                    sleep(0.001)
+                                scores.appends(score)
 
         return scores
 
