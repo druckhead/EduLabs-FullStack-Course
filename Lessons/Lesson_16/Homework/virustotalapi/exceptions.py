@@ -34,5 +34,6 @@ class AnalysisExpired(VirusTotalExceptions):
 
 class QuoataReachedError(VirusTotalExceptions):
     def __init__(self, response: Response) -> None:
-        super().__init__(f"{response.json().get('error').get('message')}\n"
-                         f"Try again later.")
+        super().__init__(
+            f"{response.json().get('error').get('message')}\n" f"Try again later."
+        )
