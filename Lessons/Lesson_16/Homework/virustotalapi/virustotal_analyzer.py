@@ -5,6 +5,7 @@ import urllib.parse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta
 from json import dump, load
+from threading import Lock
 from time import sleep
 
 import dotenv
@@ -51,6 +52,8 @@ class VirusTotal:
                 print(fnf)
                 # posible exit program
 
+        self._lock = Lock()
+
         self._parser = argparse.ArgumentParser(
             prog="VirusTotal Scanner",
             description="The program allows to check a URL with VirusTotal API",
@@ -60,7 +63,7 @@ class VirusTotal:
         # Define arguments so it will know how to parse
 
         self._parser.add_argument(
-            "urls", nargs="+", help="One or more URLs to scan. Separated by comma"
+            "urls", nargs="*", help="One or more URLs to scan. Separated by comma"
         )
 
         self._parser.add_argument(
@@ -93,6 +96,13 @@ class VirusTotal:
 
         self._parser.add_argument(
             "-i", action="store_true", help="Prompt before removal"
+        )
+
+        self._parser.add_argument(
+            "-q",
+            "--quota",
+            action="store_true",
+            help="get the quota usage for the user",
         )
         # end define args
         self._args = self._parser.parse_args()
@@ -130,9 +140,13 @@ class VirusTotal:
         if self._args.scan:
             self._scan_urls(urls=self._args.urls)
 
-        reputatuons = self._url_analysis(urls=self._args.urls)
+        if self._args.quota:
+            print()
+            print(self._get_overall_quotas(os.getenv("KEY")))
 
-        print(*reputatuons, sep="\n")
+        if len(self._args.urls) > 0:
+            reputatuons = self._url_analysis(urls=self._args.urls)
+            print(*reputatuons, sep="\n")
 
         # save the cached urls
         try:
@@ -149,6 +163,31 @@ class VirusTotal:
                 self._cache.pop(key)
         if self._args.verbose:
             print("deleted all cached urls.")
+
+    def _get_overall_quotas(self, apikey: str):
+        headers = self._base_headers.copy()
+        if self._args.apikey is not None:
+            headers["x-apikey"] = self._args.apikey
+
+        request_url = f"https://www.virustotal.com/api/v3/users/{apikey}/overall_quotas"
+
+        response = requests.get(url=request_url, headers=headers)
+        if response.status_code == 200:
+            response_dict = response.json()
+            return self._process_quota(response_dict)
+        else:
+            raise BadRequest(response=response)
+
+    @staticmethod
+    def _process_quota(quota_response: dict):
+        data: dict = quota_response.get("data")
+        string = ""
+        for k, v in data.items():
+            user = v.get("user")
+            string += f"{k}\ncalls used: {user.get('used')}\ncalls allowed: {user.get('allowed')}\n"
+            string += "\n"
+
+        return string
 
     def _get_analysis_score(self, url: str) -> tuple[str, int]:
         """
@@ -190,7 +229,8 @@ class VirusTotal:
 
             # if param days past since last analysis, clear cached link
             if now >= last_analysis_utc + timedelta(days=self._args.days):
-                self._cache.pop(url)
+                with self._lock:
+                    self._cache.pop(url)
                 raise AnalysisExpired(
                     url=url,
                     last_analysis=last_analysis_utc,
@@ -213,8 +253,13 @@ class VirusTotal:
             response = requests.get(request_url, headers=headers)
 
             if response.status_code == 200:
-                if url not in self._cache:
-                    self._cache[url] = response.json()
+                if url not in self._cache and self._args.scan is False:
+                    with self._lock:
+                        self._cache[url] = response.json()
+                elif self._args.scan:
+                    # if forced scan then update cache with new scan
+                    with self._lock:
+                        self._cache[url] = response.json()
             elif response.status_code == 404:
                 raise AnalysisDataDoesNotExist(url=url)
             elif response.status_code == 429:
