@@ -1,17 +1,28 @@
 -- create table for drivers
 CREATE TABLE public.drivers (
-    id serial PRIMARY KEY,
+    driver_id serial PRIMARY KEY,
     passport_num varchar(9) UNIQUE NOT NULL,
     first_name varchar(50) NOT NULL,
     last_name varchar(50) NOT NULL,
     driver_address varchar(50) NOT NULL
 );
 
--- create the table for route stops
-CREATE TABLE public.stops (
+-- create the table for rides
+CREATE TABLE public.rides (
+    ride_id serial PRIMARY KEY,
+    route_num int NOT NULL,
+    driver_id int NOT NULL,
+    route_id int UNIQUE NOT NULL,
+    CONSTRAINT fk_driver_id FOREIGN KEY (driver_id) REFERENCES drivers (driver_id)
+);
+
+-- create table for service inturruptions
+CREATE TABLE public.service_interruptions (
     id serial PRIMARY KEY,
-    city varchar(50) NOT NULL,
-    name varchar(50) NOT NULL
+    interruption_type varchar(6) CONSTRAINT is_valid_interruption CHECK (interruption_type IN ('cancel', 'delay')),
+    ride_delay timestamp,
+    ride_id int NOT NULL,
+    CONSTRAINT fk_ride_id FOREIGN KEY (ride_id) REFERENCES rides (ride_id)
 );
 
 -- create the table for ride stops
@@ -21,53 +32,31 @@ CREATE TABLE public.ride_stops (
     departure_time time NOT NULL CONSTRAINT arrival_is_after_departure CHECK (arrival_time > departure_time),
     ride_id int NOT NULL,
     stop_id int NOT NULL,
-    stop_ordinal smallint NOT NULL
-);
-
--- create the table for rides
-CREATE TABLE public.rides (
-    id serial PRIMARY KEY,
-    route_num int NOT NULL,
-    driver_id int NOT NULL,
-    route_id int NOT NULL
+    stop_ordinal int NOT NULL,
+    CONSTRAINT fk_ride_id FOREIGN KEY (ride_id) REFERENCES rides (ride_id),
+    UNIQUE (stop_id)
 );
 
 -- create the table for bus routes
 CREATE TABLE public.routes (
-    id serial PRIMARY KEY,
-    route_num int NOT NULL,
+    route_id serial PRIMARY KEY,
+    destination_stop_id int NOT NULL CONSTRAINT origin_is_diff_dest CHECK (origin_stop_id <> destination_stop_id),
     origin_stop_id int NOT NULL,
-    destination_stop_id int NOT NULL CONSTRAINT origin_is_diff_dest CHECK (origin_stop_id <> destination_stop_id)
+    route_num int NOT NULL,
+    FOREIGN KEY (route_id) REFERENCES rides (route_id),
+    UNIQUE (origin_stop_id),
+    UNIQUE (destination_stop_id)
 );
 
--- create table for service inturruptions
-CREATE TABLE public.service_interruptions (
-    id serial PRIMARY KEY,
-    interruption_type varchar(6) NOT NULL CONSTRAINT is_valid_interruption CHECK (interruption_type IN ('cancel', 'delay')),
-    ride_delay timestamp,
-    ride_id int NOT NULL
+-- create the table for route stops
+CREATE TABLE public.stops (
+    stop_id serial PRIMARY KEY,
+    city varchar(50) NOT NULL,
+    name varchar(50) NOT NULL,
+    CONSTRAINT fk_stop_id FOREIGN KEY (stop_id) REFERENCES ride_stops(stop_id),
+    CONSTRAINT fk_origin_stop_id FOREIGN KEY (stop_id) REFERENCES routes (origin_stop_id),
+    CONSTRAINT fk_destination_id FOREIGN KEY (stop_id) REFERENCES routes (destination_stop_id)
 );
-
-ALTER TABLE rides
-ADD CONSTRAINT fk_driver_id FOREIGN KEY (driver_id) REFERENCES drivers (id);
-
-ALTER TABLE rides
-ADD CONSTRAINT fk_route_id FOREIGN KEY (route_id) REFERENCES routes (id);
-
-ALTER TABLE ride_stops
-ADD CONSTRAINT fk_ride_id FOREIGN KEY (ride_id) REFERENCES rides (id);
-
-ALTER TABLE ride_stops
-ADD CONSTRAINT fk_stop_id FOREIGN KEY (stop_id) REFERENCES stops (id);
-
-ALTER TABLE service_interruptions
-ADD CONSTRAINT fk_ride_id FOREIGN KEY (ride_id) REFERENCES rides (id);
-
-ALTER TABLE routes
-ADD CONSTRAINT fk_origin_stop_id FOREIGN KEY (origin_stop_id) REFERENCES stops (id);
-
-ALTER TABLE routes
-ADD CONSTRAINT fk_destination_id FOREIGN KEY (destination_stop_id) REFERENCES stops (id);
 
 -- populate drives table
 INSERT INTO drivers (
@@ -135,38 +124,6 @@ VALUES (
         '20370 Warrior Street'
     );
 
--- populate stops table
-INSERT INTO stops (city, name)
-VALUES ('Bulualto', 'Vidon');
-
-INSERT INTO stops (city, name)
-VALUES ('Sibayo', 'Hollow Ridge');
-
-INSERT INTO stops (city, name)
-VALUES ('Kebon', 'La Follette');
-
-INSERT INTO stops (city, name)
-VALUES ('Caicun', 'Morning');
-
-INSERT INTO stops (city, name)
-VALUES ('Chum Phae', 'Springview');
-
--- populate routes table
-INSERT INTO routes (destination_stop_id, origin_stop_id, route_num)
-VALUES (1, 3, 1);
-
-INSERT INTO routes (destination_stop_id, origin_stop_id, route_num)
-VALUES (4, 2, 2);
-
-INSERT INTO routes (destination_stop_id, origin_stop_id, route_num)
-VALUES (3, 1, 3);
-
-INSERT INTO routes (destination_stop_id, origin_stop_id, route_num)
-VALUES (1, 3, 4);
-
-INSERT INTO routes (destination_stop_id, origin_stop_id, route_num)
-VALUES (5, 2, 5);
-
 -- pupulate rides table
 INSERT INTO rides (route_num, driver_id, route_id)
 VALUES (1, 1, 1);
@@ -182,6 +139,22 @@ VALUES (4, 4, 4);
 
 INSERT INTO rides (route_num, driver_id, route_id)
 VALUES (5, 5, 5);
+
+-- populate service_interruptions table
+INSERT INTO service_interruptions (interruption_type, ride_delay, ride_id)
+VALUES ('delay', '2022-12-16 21:06:02', 1);
+
+INSERT INTO service_interruptions (interruption_type, ride_delay, ride_id)
+VALUES ('delay', '2022-08-24 20:38:47', 2);
+
+INSERT INTO service_interruptions (interruption_type, ride_delay, ride_id)
+VALUES ('cancel', NULL, 3);
+
+INSERT INTO service_interruptions (interruption_type, ride_delay, ride_id)
+VALUES ('delay', '2022-08-26 17:44:33', 4);
+
+INSERT INTO service_interruptions (interruption_type, ride_delay, ride_id)
+VALUES ('cancel', NULL, 5);
 
 -- pupulate ride_stops table
 INSERT INTO ride_stops (
@@ -229,18 +202,34 @@ INSERT INTO ride_stops (
     )
 VALUES ('12:46:13', '4:15:07', 5, 5, 5);
 
--- populate service_interruptions table
-INSERT INTO service_interruptions (interruption_type, ride_delay, ride_id)
-VALUES ('delay', '2022-12-16 21:06:02', 1);
+-- populate routes table
+INSERT INTO routes (destination_stop_id, origin_stop_id, route_num)
+VALUES (1, 5, 1);
 
-INSERT INTO service_interruptions (interruption_type, ride_delay, ride_id)
-VALUES ('delay', '2022-08-24 20:38:47', 2);
+INSERT INTO routes (destination_stop_id, origin_stop_id, route_num)
+VALUES (2, 3, 2);
 
-INSERT INTO service_interruptions (interruption_type, ride_delay, ride_id)
-VALUES ('cancel', NULL, 3);
+INSERT INTO routes (destination_stop_id, origin_stop_id, route_num)
+VALUES (3, 4, 3);
 
-INSERT INTO service_interruptions (interruption_type, ride_delay, ride_id)
-VALUES ('delay', '2022-08-26 17:44:33', 4);
+INSERT INTO routes (destination_stop_id, origin_stop_id, route_num)
+VALUES (4, 2, 4);
 
-INSERT INTO service_interruptions (interruption_type, ride_delay, ride_id)
-VALUES ('cancel', NULL, 5);
+INSERT INTO routes (destination_stop_id, origin_stop_id, route_num)
+VALUES (5, 1, 5);
+
+-- populate stops table
+INSERT INTO stops (city, name)
+VALUES ('Bulualto', 'Vidon');
+
+INSERT INTO stops (city, name)
+VALUES ('Sibayo', 'Hollow Ridge');
+
+INSERT INTO stops (city, name)
+VALUES ('Kebon', 'La Follette');
+
+INSERT INTO stops (city, name)
+VALUES ('Caicun', 'Morning');
+
+INSERT INTO stops (city, name)
+VALUES ('Chum Phae', 'Springview');
