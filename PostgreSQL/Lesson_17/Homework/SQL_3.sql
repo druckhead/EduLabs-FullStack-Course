@@ -26,10 +26,13 @@ CREATE TABLE public.routes (
 -- create the table for rides
 CREATE TABLE public.rides (
     id serial PRIMARY KEY,
-    route_num int NOT NULL,
     driver_id int NOT NULL,
     route_id int NOT NULL,
-    CONSTRAINT fk_driver_id FOREIGN KEY (driver_id) REFERENCES drivers (id) ON DELETE SET NULL ON UPDATE CASCADE,
+    weekday varchar(3) NOT NULL CHECK (
+        weekday IN ('mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun')
+    ),
+    CONSTRAINT fk_driver_id FOREIGN KEY (driver_id) REFERENCES drivers (id) ON DELETE
+    SET NULL ON UPDATE CASCADE,
     CONSTRAINT fk_route_id FOREIGN KEY (route_id) REFERENCES routes (id) ON DELETE CASCADE
 );
 
@@ -48,7 +51,7 @@ CREATE TABLE public.ride_stops (
 -- create table for service inturruptions
 CREATE TABLE public.service_interruptions (
     id serial PRIMARY KEY,
-    interruption_type varchar(6) NOT NULL CONSTRAINT is_valid_interruption CHECK (interruption_type IN ('cancel', 'delay')),
+    interruption_type varchar(11) NOT NULL CONSTRAINT is_valid_interruption CHECK (interruption_type IN ('cancelation', 'delay')),
     ride_delay timestamp,
     ride_id int NOT NULL,
     CONSTRAINT fk_ride_id FOREIGN KEY (ride_id) REFERENCES rides (id)
@@ -153,20 +156,20 @@ INSERT INTO routes (destination_stop_id, origin_stop_id, route_num)
 VALUES (5, 1, 5);
 
 -- pupulate rides table
-INSERT INTO rides (route_num, driver_id, route_id)
-VALUES (1, 1, 1);
+INSERT INTO rides (driver_id, route_id, weekday)
+VALUES (1, 1, 'sun');
 
-INSERT INTO rides (route_num, driver_id, route_id)
-VALUES (2, 2, 2);
+INSERT INTO rides (driver_id, route_id, weekday)
+VALUES (2, 2, 'tue');
 
-INSERT INTO rides (route_num, driver_id, route_id)
-VALUES (3, 3, 3);
+INSERT INTO rides (driver_id, route_id, weekday)
+VALUES (3, 1, 'tue');
 
-INSERT INTO rides (route_num, driver_id, route_id)
-VALUES (4, 4, 4);
+INSERT INTO rides (driver_id, route_id, weekday)
+VALUES (4, 4, 'wed');
 
-INSERT INTO rides (route_num, driver_id, route_id)
-VALUES (5, 5, 5);
+INSERT INTO rides (driver_id, route_id, weekday)
+VALUES (5, 1, 'sun');
 
 -- pupulate ride_stops table
 INSERT INTO ride_stops (
@@ -222,10 +225,144 @@ INSERT INTO service_interruptions (interruption_type, ride_delay, ride_id)
 VALUES ('delay', '2022-08-24 20:38:47', 2);
 
 INSERT INTO service_interruptions (interruption_type, ride_delay, ride_id)
-VALUES ('cancel', NULL, 3);
+VALUES ('cancelation', NULL, 3);
 
 INSERT INTO service_interruptions (interruption_type, ride_delay, ride_id)
 VALUES ('delay', '2022-08-26 17:44:33', 4);
 
 INSERT INTO service_interruptions (interruption_type, ride_delay, ride_id)
-VALUES ('cancel', NULL, 5);
+VALUES ('cancelation', NULL, 5);
+
+
+
+-- sdssss
+INSERT INTO drivers (passport_num, first_name, last_name, driver_address)
+VALUES ('111111111', 'Israel', 'Israeli', 'Tel Aviv');
+
+INSERT INTO drivers (passport_num, first_name, last_name, driver_address)
+VALUES ('222222222', 'Moshe', 'Cohen', 'Hod Hasharon');
+
+INSERT INTO drivers (passport_num, first_name, last_name, driver_address)
+VALUES ('333333333', 'David', 'Shwimmer', 'Tveriya');
+
+INSERT INTO drivers (passport_num, first_name, last_name, driver_address)
+VALUES ('444444444', 'Tali', 'Shani', 'Tel Aviv');
+
+INSERT INTO drivers (passport_num, first_name, last_name, driver_address)
+VALUES ('555555555', 'Sagi', 'Shem Tov', 'Tel Aviv');
+
+INSERT INTO stops (city, "name")
+VALUES('Tel Aviv', 'Central bus station');
+
+INSERT INTO stops (city, "name")
+VALUES('Tel Aviv', 'Alenby');
+
+INSERT INTO stops (city, "name")
+VALUES('Tel Aviv', 'University');
+
+INSERT INTO stops (city, "name")
+VALUES('Haifa', 'Matam');
+
+INSERT INTO stops (city, "name")
+VALUES('Haifa', 'Technion');
+
+INSERT INTO routes (destination_stop_id, origin_stop_id, route_num)
+VALUES(4, 1, 100);
+
+INSERT INTO routes (destination_stop_id, origin_stop_id, route_num)
+VALUES(10, 1, 200);
+
+INSERT INTO routes (destination_stop_id, origin_stop_id, route_num)
+VALUES(5, 4, 300);
+
+INSERT INTO routes (destination_stop_id, origin_stop_id, route_num)
+VALUES(5, 3, 400);
+
+INSERT INTO routes (destination_stop_id, origin_stop_id, route_num)
+VALUES(2, 3, 500);
+
+INSERT INTO rides (driver_id, route_id, weekday)
+VALUES(6, 1, 'sun');
+
+INSERT INTO rides (driver_id, route_id, weekday)
+VALUES(2, 4, 'tue');
+
+INSERT INTO rides (driver_id, route_id, weekday)
+VALUES(1, 5, 'tue');
+
+INSERT INTO rides (driver_id, route_id, weekday)
+VALUES(4, 3, 'thu');
+
+INSERT INTO rides (driver_id, route_id, weekday)
+VALUES(1, 6, 'sun');
+
+-- T
+INSERT INTO ride_stops (
+        arrival_time,
+        departure_time,
+        ride_id,
+        stop_id,
+        stop_ordinal
+    )
+VALUES('10:31', '10:30', 1, 9, 1);
+
+INSERT INTO ride_stops (
+        arrival_time,
+        departure_time,
+        ride_id,
+        stop_id,
+        stop_ordinal
+    )
+VALUES('10:55', '10:50', 1, 3, 2);
+
+INSERT INTO ride_stops (
+        arrival_time,
+        departure_time,
+        ride_id,
+        stop_id,
+        stop_ordinal
+    )
+VALUES('11:32', '11:30', 1, 5, 3);
+
+INSERT INTO ride_stops (
+        arrival_time,
+        departure_time,
+        ride_id,
+        stop_id,
+        stop_ordinal
+    )
+VALUES('12:50', '11:50', 1, 9, 4);
+
+INSERT INTO service_interruptions (interruption_type, ride_delay, ride_id)
+VALUES('cancelation', '2023-01-08 04:05:06', 1);
+
+INSERT INTO service_interruptions (interruption_type, ride_delay, ride_id)
+VALUES('delay', '2023-01-09 17:05:00', 2);
+
+INSERT INTO service_interruptions (interruption_type, ride_delay, ride_id)
+VALUES('delay', '2023-01-06 14:00:00', 1);
+
+INSERT INTO service_interruptions (interruption_type, ride_delay, ride_id)
+VALUES('cancelation', '2023-01-05 09:05:10', 3);
+
+INSERT INTO service_interruptions (interruption_type, ride_delay, ride_id)
+VALUES('cancelation', '2023-01-08 12:00:00', 1);
+
+-- gfuyfiytt
+INSERT INTO rides (driver_id, route_id, weekday)
+VALUES (4, 7, 'wed');
+
+INSERT INTO rides (driver_id, route_id, weekday)
+VALUES (1, 7, 'sun');
+
+INSERT INTO rides (driver_id, route_id, weekday)
+VALUES (3, 7, 'thu');
+
+INSERT INTO rides (driver_id, route_id, weekday)
+VALUES (10, 7, 'sun');
+
+INSERT INTO rides (driver_id, route_id, weekday)
+VALUES (9, 7, 'sun');
+
+INSERT INTO rides (driver_id, route_id, weekday)
+VALUES (4, 7, 'wed');
