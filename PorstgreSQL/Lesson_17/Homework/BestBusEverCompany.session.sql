@@ -29,8 +29,8 @@ CREATE TABLE public.rides (
     route_num int NOT NULL,
     driver_id int NOT NULL,
     route_id int NOT NULL,
-    CONSTRAINT fk_driver_id FOREIGN KEY (driver_id) REFERENCES drivers (id),
-    CONSTRAINT fk_route_id FOREIGN KEY (route_id) REFERENCES routes (id)
+    CONSTRAINT fk_driver_id FOREIGN KEY (driver_id) REFERENCES drivers (id) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT fk_route_id FOREIGN KEY (route_id) REFERENCES routes (id) ON DELETE CASCADE
 );
 
 -- create the table for ride stops
