@@ -26,8 +26,8 @@ CREATE TABLE transactions (
     ts time NOT NULL,
     receiver int,
     sender int,
-    amount int NOT NULL,
     initiated_by int NOT NULL,
+    amount int NOT NULL,
     CONSTRAINT fk_receiver FOREIGN KEY (receiver) REFERENCES accounts (id),
     CONSTRAINT fk_sender FOREIGN KEY (sender) REFERENCES accounts (id),
     CONSTRAINT fk_initiated FOREIGN KEY (initiated_by) REFERENCES customers (id)
