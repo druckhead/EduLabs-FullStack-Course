@@ -19,21 +19,27 @@ dotenv.load_dotenv()
 
 def _encode_url(url: str):
     """
-    :param url: str -> url of website
-    :return: url_id -> base64 encoded url
+    Paramaters:
+        url: string representation of a url of a website
+        
+    Returns:
+        base64 encoded url
     """
     url_id = base64.urlsafe_b64encode(url.encode()).decode().strip("=")
     return url_id
 
 
 class VirusTotal:
+    """
+        def __init__(self, args: argparse.Namespace) -> None:
+    """
     _base_url = "https://www.virustotal.com/api/v3/urls"
     _base_headers = {
         "accept": "application/json",
         "x-apikey": os.getenv("KEY"),
     }
 
-    def __init__(self):
+    def __init__(self, args: argparse.Namespace) -> None:
         directory_path = os.path.join(os.curdir, "cache")
         if not os.path.exists(path=directory_path):
             os.mkdir(path=directory_path)
@@ -51,102 +57,10 @@ class VirusTotal:
             except FileNotFoundError as fnf:
                 print(fnf)
                 # posible exit program
+                
+        self._args = args
 
         self._lock = Lock()
-
-        self._parser = argparse.ArgumentParser(
-            prog="VirusTotal Scanner",
-            description="The program allows to check a URL with VirusTotal API",
-            epilog="By, Daniel Raz",
-        )
-
-        # Define arguments so it will know how to parse
-
-        self._parser.add_argument(
-            "urls", nargs="*", help="One or more URLs to scan. Separated by comma"
-        )
-
-        self._parser.add_argument(
-            "-k",
-            "--apikey",
-            action="store",
-            help="Optionaly add your own custom apikey",
-        )
-
-        self._parser.add_argument(
-            "-s", "--scan", action="store_true", help="force new scan"
-        )
-
-        self._parser.add_argument(
-            "-v", "--verbose", action="store_true", help="verbose help message"
-        )
-
-        self._parser.add_argument(
-            "-d",
-            "--days",
-            action="store",
-            type=int,
-            help="The amount of days to for the cache to persist",
-            default=180,
-        )
-
-        self._parser.add_argument(
-            "-c", "--clear", action="store_true", help="Clear the cached links"
-        )
-
-        self._parser.add_argument(
-            "-i", action="store_true", help="Prompt before removal"
-        )
-
-        self._parser.add_argument(
-            "-q",
-            "--quota",
-            action="store_true",
-            help="get the quota usage for the user",
-        )
-        # end define args
-        self._args = self._parser.parse_args()
-        if self._args.verbose:
-            print(
-                self._args.urls,
-                self._args.apikey,
-                self._args.scan,
-                self._args.verbose,
-                self._args.days,
-                self._args.clear,
-                self._args.i,
-            )
-
-        if self._args.clear:
-            choice = None
-            if self._args.i:
-                choice = (
-                    input("are you sure you want to clear the cache? (y/n)\n" ">>> ")
-                    .lower()
-                    .strip()
-                )
-                while "y" != choice != "n":
-                    print(f"choice {choice} not available.")
-                    choice = (
-                        input(
-                            "are you sure you want to clear the cache? (y/n)\n" ">>> "
-                        )
-                        .lower()
-                        .strip()
-                    )
-            if choice == "y":
-                self._clear_cache()
-
-        if self._args.scan:
-            self._scan_urls(urls=self._args.urls)
-
-        if self._args.quota:
-            print()
-            print(self._get_overall_quotas(os.getenv("KEY")))
-
-        if len(self._args.urls) > 0:
-            reputatuons = self._url_analysis(urls=self._args.urls)
-            print(*reputatuons, sep="\n")
 
         # save the cached urls
         try:
@@ -156,15 +70,41 @@ class VirusTotal:
             print("Unknown error occured")
             print(exception)
 
-    def _clear_cache(self):
+    def clear_cache(self):
+        """
+        Clear all urls in the cache
+        """
         keys = list(self._cache.keys())
         if len(keys) != 0:
             for key in keys:
                 self._cache.pop(key)
         if self._args.verbose:
             print("deleted all cached urls.")
+            
+    @staticmethod
+    def _process_quota(quota_response: dict) -> str:
+        data: dict = quota_response.get("data")
+        string = ""
+        for k, v in data.items():
+            user = v.get("user")
+            string += f"{k}\ncalls used: {user.get('used')}\ncalls allowed: {user.get('allowed')}\n"
+            string += "\n"
 
-    def _get_overall_quotas(self, apikey: str):
+        return string
+
+    def get_overall_quotas(self, apikey: str) -> str:
+        """
+        Send a get request to VirusTotal API to get the user quota information
+        
+        Paramaters:
+            apikey: string representation of a user apikey
+        
+        Returns:
+            a formatted sting depicting of the used quota by the apikey given
+        
+        Raises:
+            BadRequest exception if the request was unsuccessful
+        """
         headers = self._base_headers.copy()
         if self._args.apikey is not None:
             headers["x-apikey"] = self._args.apikey
@@ -178,21 +118,9 @@ class VirusTotal:
         else:
             raise BadRequest(response=response)
 
-    @staticmethod
-    def _process_quota(quota_response: dict):
-        data: dict = quota_response.get("data")
-        string = ""
-        for k, v in data.items():
-            user = v.get("user")
-            string += f"{k}\ncalls used: {user.get('used')}\ncalls allowed: {user.get('allowed')}\n"
-            string += "\n"
-
-        return string
-
     def _get_analysis_score(self, url: str) -> tuple[str, int]:
         """
         Calculate the analysis score from VirusTotal last_analysis_stats
-        "param
         """
 
         reputation = (
@@ -203,12 +131,29 @@ class VirusTotal:
 
     def _get_single_analysis(self, url: str, headers: dict) -> int:
         """
-        Send a GET request to VirusTotal API to fetch scan data for url\n
-        Return analysis score for url from VirusTotal API\n
-        :param url: str -> url of website
-        :return: analysis score -> int (0-100)
+        Send a GET request to VirusTotal API to to get url analysis results
+        
+        Paramaters:
+            url:
+                a url to analyze using the VirusTotal API
+            
+            headers:
+                the headers to pass to the request
+        
+        Raises:
+            AnalysisExpired:
+                if too much time has passed since the last analysis date
+                
+            AnalysisDoesNotExist:
+                if the analyze data for the url does not exist in VirusTotal's data
+                
+            QuotaReacedError:
+                if reached maximum quota for apikey
+            
+            BadRequest:
+                if there was some other error with the request
         """
-
+        
         if self._args.verbose:
             print(f"Starting to fetch analysis for url {url}")
 
@@ -274,9 +219,21 @@ class VirusTotal:
 
     def _scan_single_url(self, url: str, headers: dict) -> None:
         """
-        Send a post request to VirusTotal API asking to scan url\n
-        :param url: url to scan
-        :return: None
+        Send a post request to VirusTotal API asking to scan url
+        
+        Paramaters:
+            url:
+                a url to scan using the VirusTotal API
+            
+            headers:
+                the headers to pass to the request
+        
+        Raises:
+            QuotaReacedError:
+                if reached maximum quota for apikey
+            
+            BadRequest:
+                if there was some other error with the request
         """
 
         if self._args.verbose:
@@ -293,11 +250,12 @@ class VirusTotal:
         if self._args.verbose:
             print(f"Done scanning for url {url}")
 
-    def _scan_urls(self, urls: list[str]):
+    def scan_urls(self, urls: list[str]):
         """
-        Scan all the urls with a progress bar\n
-        :param urls: a list of urls to scan
-        :return: None
+        Scan all the urls with a progress bar
+        
+        Paramaters:
+            urls: a list of urls to scan using the VirusTotal API
         """
 
         headers = self._base_headers.copy()
@@ -321,7 +279,18 @@ class VirusTotal:
         if self._args.verbose:
             print(f"Done scanning urls {urls}")
 
-    def _url_analysis(self, urls: list[str]) -> list[tuple[str, int]]:
+    def url_analysis(self, urls: list[str]) -> list[tuple[str, int]]:
+        """
+        Analyze all the urls using the VirusTotal API
+        
+        Paramaters:
+            urls: a list of urls to analyze using the VirusTotal API
+        
+        Returns:
+            a list of tuples containing the url and the url score\n
+            i.e. [("some_url, 368), (some_other_url, 223)]
+        """
+        
         scores: list[tuple[str, int]] = []
 
         headers = self._base_headers.copy()
@@ -384,10 +353,97 @@ class VirusTotal:
                             except BadRequest as bad_analysis_request:
                                 print(bad_analysis_request)
                             else:
-                                scores.appends(score)
+                                scores.append(score)
 
         return scores
 
 
 if __name__ == "__main__":
-    vt = VirusTotal()
+    parser = argparse.ArgumentParser(
+        prog="VirusTotal Scanner",
+        description="The program allows to check a URL with VirusTotal API",
+        epilog="By, Daniel Raz",
+    )
+
+    # Define arguments so it will know how to parse
+    parser.add_argument(
+        "urls", nargs="*", help="One or more URLs to scan. Separated by comma"
+    )
+
+    parser.add_argument(
+        "-k",
+        "--apikey",
+        action="store",
+        help="Optionaly add your own custom apikey",
+    )
+
+    parser.add_argument("-s", "--scan", action="store_true", help="force new scan")
+
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="verbose help message"
+    )
+
+    parser.add_argument(
+        "-d",
+        "--days",
+        action="store",
+        type=int,
+        help="The amount of days to for the cache to persist",
+        default=180,
+    )
+
+    parser.add_argument(
+        "-c", "--clear", action="store_true", help="Clear the cached links"
+    )
+
+    parser.add_argument("-i", action="store_true", help="Prompt before removal")
+
+    parser.add_argument(
+        "-q",
+        "--quota",
+        action="store_true",
+        help="get the quota usage for the user",
+    )
+    # end define args
+    args = parser.parse_args()
+    if args.verbose:
+        print(
+            args.urls,
+            args.apikey,
+            args.scan,
+            args.verbose,
+            args.days,
+            args.clear,
+            args.i,
+        )
+        
+    vt = VirusTotal(args=args)
+
+    if args.clear:
+        choice = None
+        if args.i:
+            choice = (
+                input("are you sure you want to clear the cache? (y/n)\n" ">>> ")
+                .lower()
+                .strip()
+            )
+            while "y" != choice != "n":
+                print(f"choice {choice} not available.")
+                choice = (
+                    input("are you sure you want to clear the cache? (y/n)\n" ">>> ")
+                    .lower()
+                    .strip()
+                )
+        if choice == "y":
+            vt.clear_cache()
+
+    if args.scan:
+        vt.scan_urls(urls=args.urls)
+
+    if args.quota:
+        print()
+        print(vt.get_overall_quotas(os.getenv("KEY")))
+
+    if len(args.urls) > 0:
+        reputatuons = vt.url_analysis(urls=args.urls)
+        print(*reputatuons, sep="\n")
