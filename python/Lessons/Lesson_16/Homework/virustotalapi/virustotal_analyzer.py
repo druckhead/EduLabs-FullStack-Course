@@ -21,7 +21,7 @@ def _encode_url(url: str):
     """
     Paramaters:
         url: string representation of a url of a website
-        
+
     Returns:
         base64 encoded url
     """
@@ -31,8 +31,9 @@ def _encode_url(url: str):
 
 class VirusTotal:
     """
-        def __init__(self, args: argparse.Namespace) -> None:
+    def __init__(self, args: argparse.Namespace) -> None:
     """
+
     _base_url = "https://www.virustotal.com/api/v3/urls"
     _base_headers = {
         "accept": "application/json",
@@ -57,7 +58,7 @@ class VirusTotal:
             except FileNotFoundError as fnf:
                 print(fnf)
                 # posible exit program
-                
+
         self._args = args
 
         self._lock = Lock()
@@ -80,7 +81,7 @@ class VirusTotal:
                 self._cache.pop(key)
         if self._args.verbose:
             print("deleted all cached urls.")
-            
+
     @staticmethod
     def _process_quota(quota_response: dict) -> str:
         data: dict = quota_response.get("data")
@@ -95,13 +96,13 @@ class VirusTotal:
     def get_overall_quotas(self, apikey: str) -> str:
         """
         Send a get request to VirusTotal API to get the user quota information
-        
+
         Paramaters:
             apikey: string representation of a user apikey
-        
+
         Returns:
             a formatted sting depicting of the used quota by the apikey given
-        
+
         Raises:
             BadRequest exception if the request was unsuccessful
         """
@@ -132,28 +133,28 @@ class VirusTotal:
     def _get_single_analysis(self, url: str, headers: dict) -> int:
         """
         Send a GET request to VirusTotal API to to get url analysis results
-        
+
         Paramaters:
             url:
                 a url to analyze using the VirusTotal API
-            
+
             headers:
                 the headers to pass to the request
-        
+
         Raises:
             AnalysisExpired:
                 if too much time has passed since the last analysis date
-                
+
             AnalysisDoesNotExist:
                 if the analyze data for the url does not exist in VirusTotal's data
-                
+
             QuotaReacedError:
                 if reached maximum quota for apikey
-            
+
             BadRequest:
                 if there was some other error with the request
         """
-        
+
         if self._args.verbose:
             print(f"Starting to fetch analysis for url {url}")
 
@@ -165,22 +166,9 @@ class VirusTotal:
             last_analysis_epoch = self._cache[url]["data"]["attributes"][
                 "last_analysis_date"
             ]
-
-            # convert epoch to utc and make datetime tz aware
-            last_analysis_utc = datetime.utcfromtimestamp(
-                last_analysis_epoch
-            ).astimezone(pytz.UTC)
-            now = datetime.utcnow().astimezone(tz=pytz.UTC)
-
-            # if param days past since last analysis, clear cached link
-            if now >= last_analysis_utc + timedelta(days=self._args.days):
-                with self._lock:
-                    self._cache.pop(url)
-                raise AnalysisExpired(
-                    url=url,
-                    last_analysis=last_analysis_utc,
-                    expire_date=last_analysis_utc + timedelta(days=self._args.days),
-                )
+            self.check_last_analysis_date(
+                url=url, last_analysis_epoch=last_analysis_epoch
+            )
 
             if self._args.verbose:
                 print(f"done fetching analysis for url {url}")
@@ -198,6 +186,17 @@ class VirusTotal:
             response = requests.get(request_url, headers=headers)
 
             if response.status_code == 200:
+
+                last_analysis_epoch = (
+                    response.json()
+                    .get("data")
+                    .get("attributes")
+                    .get("last_analysis_date")
+                )
+                self.check_last_analysis_date(
+                    url=url, last_analysis_epoch=last_analysis_epoch
+                )
+
                 if url not in self._cache and self._args.scan is False:
                     with self._lock:
                         self._cache[url] = response.json()
@@ -217,21 +216,38 @@ class VirusTotal:
 
         return self._get_analysis_score(url=url)
 
+    def check_last_analysis_date(self, url: str, last_analysis_epoch: str) -> None:
+        # convert epoch to utc and make datetime tz aware
+        last_analysis_utc = datetime.utcfromtimestamp(last_analysis_epoch).astimezone(
+            pytz.UTC
+        )
+        now = datetime.utcnow().astimezone(tz=pytz.UTC)
+
+        # if param days past since last analysis, clear cached link
+        if now >= last_analysis_utc + timedelta(days=self._args.days):
+            with self._lock:
+                self._cache.pop(url)
+            raise AnalysisExpired(
+                url=url,
+                last_analysis=last_analysis_utc,
+                expire_date=last_analysis_utc + timedelta(days=self._args.days),
+            )
+
     def _scan_single_url(self, url: str, headers: dict) -> None:
         """
         Send a post request to VirusTotal API asking to scan url
-        
+
         Paramaters:
             url:
                 a url to scan using the VirusTotal API
-            
+
             headers:
                 the headers to pass to the request
-        
+
         Raises:
             QuotaReacedError:
                 if reached maximum quota for apikey
-            
+
             BadRequest:
                 if there was some other error with the request
         """
@@ -253,7 +269,7 @@ class VirusTotal:
     def scan_urls(self, urls: list[str]):
         """
         Scan all the urls with a progress bar
-        
+
         Paramaters:
             urls: a list of urls to scan using the VirusTotal API
         """
@@ -282,15 +298,15 @@ class VirusTotal:
     def url_analysis(self, urls: list[str]) -> list[tuple[str, int]]:
         """
         Analyze all the urls using the VirusTotal API
-        
+
         Paramaters:
             urls: a list of urls to analyze using the VirusTotal API
-        
+
         Returns:
             a list of tuples containing the url and the url score\n
             i.e. [("some_url, 368), (some_other_url, 223)]
         """
-        
+
         scores: list[tuple[str, int]] = []
 
         headers = self._base_headers.copy()
@@ -416,7 +432,7 @@ if __name__ == "__main__":
             args.clear,
             args.i,
         )
-        
+
     vt = VirusTotal(args=args)
 
     if args.clear:
