@@ -63,7 +63,14 @@ class VirusTotal:
 
         self._lock = Lock()
 
-        # save the cached urls
+    @property
+    def cache(self):
+        return self._cache
+
+    def _save_cache(self) -> None:
+        directory_path = os.path.join(os.curdir, "cache")
+        fpath = os.path.join(directory_path, "cache.json")
+
         try:
             with open(file=fpath, mode="w") as cached_urls:
                 dump(self._cache, cached_urls)
@@ -81,6 +88,8 @@ class VirusTotal:
                 self._cache.pop(key)
         if self._args.verbose:
             print("deleted all cached urls.")
+
+        self._save_cache()
 
     @staticmethod
     def _process_quota(quota_response: dict) -> str:
@@ -166,9 +175,12 @@ class VirusTotal:
             last_analysis_epoch = self._cache[url]["data"]["attributes"][
                 "last_analysis_date"
             ]
-            self.check_last_analysis_date(
+            expired = self.check_last_analysis_date(
                 url=url, last_analysis_epoch=last_analysis_epoch
             )
+
+            if expired is not None:
+                raise expired
 
             if self._args.verbose:
                 print(f"done fetching analysis for url {url}")
@@ -193,9 +205,13 @@ class VirusTotal:
                     .get("attributes")
                     .get("last_analysis_date")
                 )
-                self.check_last_analysis_date(
-                    url=url, last_analysis_epoch=last_analysis_epoch
-                )
+                try:
+                    self.check_last_analysis_date(
+                        url=url, last_analysis_epoch=last_analysis_epoch
+                    )
+                except AnalysisExpired as analysis_expired:
+                    exit("shit")
+                # TODO
 
                 if url not in self._cache and self._args.scan is False:
                     with self._lock:
@@ -216,7 +232,7 @@ class VirusTotal:
 
         return self._get_analysis_score(url=url)
 
-    def check_last_analysis_date(self, url: str, last_analysis_epoch: str) -> None:
+    def check_last_analysis_date(self, url: str, last_analysis_epoch: str):
         # convert epoch to utc and make datetime tz aware
         last_analysis_utc = datetime.utcfromtimestamp(last_analysis_epoch).astimezone(
             pytz.UTC
@@ -225,9 +241,7 @@ class VirusTotal:
 
         # if param days past since last analysis, clear cached link
         if now >= last_analysis_utc + timedelta(days=self._args.days):
-            with self._lock:
-                self._cache.pop(url)
-            raise AnalysisExpired(
+            return AnalysisExpired(
                 url=url,
                 last_analysis=last_analysis_utc,
                 expire_date=last_analysis_utc + timedelta(days=self._args.days),
@@ -314,17 +328,15 @@ class VirusTotal:
         if self._args.apikey is not None:
             headers["x-apikey"] = self._args.apikey
 
-        flag = None
-
         with tqdm(urls, desc="getting analysis") as urls_progress:
             with ThreadPoolExecutor() as executor:
                 futures = []
                 for url in urls:
                     future = executor.submit(self._get_single_analysis, url, headers)
                     futures.append(future)
-                    sleep(0.001)
 
-                for future in as_completed(futures):
+                for url, future in zip(urls, as_completed(futures)):
+                    flag = None
                     try:
                         score = future.result()
                     except QuoataReachedError as quota_reached:
@@ -335,6 +347,7 @@ class VirusTotal:
                         flag = True
                         print(no_valid_analysis)
                     except AnalysisExpired as expired:
+                        self._cache.pop(url)
                         flag = True
                         print(expired)
                     except BadRequest as bad_request:
@@ -344,6 +357,8 @@ class VirusTotal:
                         urls_progress.update(1)
 
                     if flag:
+                        flag = False
+
                         scan_headers = headers.copy()
                         scan_headers[
                             "content-type"
@@ -370,6 +385,9 @@ class VirusTotal:
                                 print(bad_analysis_request)
                             else:
                                 scores.append(score)
+                                urls_progress.update(1)
+                    sleep(0.001)
+        self._save_cache()
 
         return scores
 
@@ -420,8 +438,16 @@ if __name__ == "__main__":
         action="store_true",
         help="get the quota usage for the user",
     )
+
+    parser.add_argument(
+        "-ca", "--cache", action="store_true", help="show the cached urls"
+    )
     # end define args
-    args = parser.parse_args()
+
+    args = parser.parse_args(
+        ["https://www.google.com", "https://www.youtube.com", "-d", "0"]
+    )
+
     if args.verbose:
         print(
             args.urls,
@@ -434,6 +460,10 @@ if __name__ == "__main__":
         )
 
     vt = VirusTotal(args=args)
+
+    if args.cache:
+        print(vt.cache.keys())
+        exit(0)
 
     if args.clear:
         choice = None
