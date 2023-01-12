@@ -444,9 +444,7 @@ if __name__ == "__main__":
     )
     # end define args
 
-    args = parser.parse_args(
-        ["https://www.google.com", "https://www.youtube.com", "-d", "0"]
-    )
+    args = parser.parse_args()
 
     if args.verbose:
         print(
