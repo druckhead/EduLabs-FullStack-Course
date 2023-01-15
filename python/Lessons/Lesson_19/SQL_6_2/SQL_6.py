@@ -8,7 +8,7 @@ class Bank:
     def __init__(self) -> None:
         pass
     
-    def passport_exists(self, passport_num) -> bool:
+    def _passport_exists(self, passport_num) -> bool:
         res = None
         
         params = get_config()
@@ -106,6 +106,11 @@ class Bank:
         if not accounts_exist:
             raise ValueError(f"One of the accounts does not exist")
         
+        passport_exists = self._passport_exists(initiated_by)
+        
+        if not passport_exists:
+            raise ValueError(f"Passport: {initiated_by} does not belong to any customer.")
+        
         params = get_config()
         
         conn = psycopg2.connect(**params)
@@ -180,5 +185,5 @@ if __name__ == "__main__":
     # print(b.check_balance(2, 1000000))
     # print(b.passport_exists(123456789))
     # print(b.passport_exists(101010101))
-    print(b.transfer(1, 2, 1000000, 123456789))
+    print(b.transfer(1, 2, 14000014, 123456789))
     
