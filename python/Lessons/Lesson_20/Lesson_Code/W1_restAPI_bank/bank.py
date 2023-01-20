@@ -462,8 +462,4 @@ def transfer(account_id: int):
         return jsonify()
             
 if __name__ == "__main__":
-    try:
-        app.run(debug=True)
-    except KeyboardInterrupt:
-        conn.close()
-        print("Connection closed!")
+    app.run(debug=True)
