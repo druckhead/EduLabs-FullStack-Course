@@ -2,7 +2,6 @@
 
 function formSubmitHandler(event) {
     event.preventDefault();
-    console.log(event);
 
     const item = document.createElement('li');
     item.setAttribute('class', 'list-group-item d-flex justify-content-between align-items-center');
@@ -12,7 +11,6 @@ function formSubmitHandler(event) {
     deleteButton.innerHTML = "X";
     deleteButton.addEventListener("click", (event) => {
         const deleteTarget = event.target.parentElement.parentElement
-        console.log(deleteTarget);
         deleteTarget.remove();
     });
 
@@ -20,16 +18,16 @@ function formSubmitHandler(event) {
     addButton.setAttribute('class', 'btn btn-outline-primary form-control-sm');
     addButton.innerHTML = "+";
     addButton.addEventListener("click", (event => {
-        const incTarget = event.target.parentElement.parentElement;
-        console.log(incTarget.innerHTML);
+        const incTarget = event.target.parentElement.parentElement.children[0].children[1];
+        incTarget.innerText++
     }));
 
     const subtractButton = document.createElement('button');
     subtractButton.setAttribute('class', 'btn btn-outline-primary form-control-sm');
     subtractButton.innerHTML = "-";
     subtractButton.addEventListener("click", (event) => {
-        const incTarget = event.target.parentElement.parentElement;
-        console.log(incTarget.innerHTML);
+        const incTarget = event.target.parentElement.parentElement.children[0].children[1];
+        incTarget.innerText--
     });
 
     const btnContainer = document.createElement('div');
@@ -45,7 +43,6 @@ function formSubmitHandler(event) {
     const fd = new FormData(event.target);
 
     for (const pair of fd.entries()) {
-        console.log(pair);
         if (pair[0] === 'product') {
             const p = document.createElement('p');
             p.setAttribute("class", "my-auto text-white")
@@ -61,8 +58,20 @@ function formSubmitHandler(event) {
             item.appendChild(productItem);
             list.appendChild(item);
             item.appendChild(btnContainer);
-
         }
     }
     event.target.reset()
+}
+
+function clearAll() {
+    const list = document.getElementById('products');
+    let toRemove = [];
+    for (const item of list.children) {
+        if (item.tagName.toLowerCase() === 'li') {
+            toRemove.push(item);
+        }
+    }
+    for (const item of toRemove) {
+        item.remove()
+    }
 }
