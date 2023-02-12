@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- Latest compiled and minified CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Latest compiled JavaScript -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- styles -->
+  <link rel="stylesheet" href="../styles/ex1.css">
+  <!-- Scripts -->
+  <script src="../scripts/ex1.js"></script>
+
+  <!-- Page Meta -->
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Practice</title>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+    <div class="container-fluid">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="navbar-brand" href="#">
+            <img src="../imgs/img_avatar1.png" alt="Avatar Logo" style="width:40px;" class="rounded-pill">
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="../pages/ex1.html" class="nav-link">Ex 1</a>
+        </li>
+        <li class="nav-item">
+          <a href="../index.html" class="nav-link">Home</a>
+        </li>
+        <li class="nav-item">
+          <a href="../pages/ex3.html" class="nav-link">Ex 3</a>
+        </li>
+      </ul>
+      <span class="navbar-text">Daniel's Practice</span>
+    </div>
+  </nav>
+  <div id="container-1" class="container-fluid d-flex align-items-center justify-content-around vw-100 vh-100">
+    <div class="d-flex mw-50 flex-column align-items-center gap-2">
+      <img id="img-1" class="img-fluid w-50 rounded-3"
+        src="https://images.unsplash.com/photo-1676136358547-39565087f582?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=987&q=80"
+        alt="Swiss Alpes" hidden>
+      <button id="btn-1" onclick="togglePhoto(event)" class="btn btn btn-primary btn-">Show Photo</button>
+    </div>
+    <div id="container-2" class="d-flex mw-50 flex-column align-items-center gap-2">
+      <img id="img-2" class="img-fluid w-50 rounded-3"
+        src="https://images.unsplash.com/photo-1676030788383-9c18ddc4a1dd?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1035&q=80"
+        alt="" hidden>
+      <button id="btn-1" onclick="togglePhoto(event)" class="btn btn btn-primary btn-">Show Photo</button>
+    </div>
+    <div id="container-3" class="d-flex mw-50 flex-column align-items-center gap-2">
+      <img id="img-3" class="img-fluid w-50 rounded-3"
+        src="https://images.unsplash.com/photo-1676030789444-6cd1067c122f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1035&q=80"
+        alt="" hidden>
+      <button id="btn-1" onclick="togglePhoto(event)" class="btn btn btn-primary">Show Photo</button>
+    </div>
+  </div>
+</body>
+
+</html>
