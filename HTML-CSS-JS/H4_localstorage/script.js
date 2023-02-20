@@ -34,7 +34,13 @@ const loadCompleteHandler = () => {
 
     const timeLeft = localStorage.getItem(`time-left`)
     if (timeLeft) {
-        updateTimer(timeLeft)
+        const startedAt = localStorage.getItem(`timer-started`)
+        const date = Date(startedAt)
+        if (confirm(`You have a timer started at: ${date}\nWould you like to resume?`)) {
+            updateTimer(timeLeft)
+        } else {
+            localStorage.clear()
+        }
     }
 }
 
@@ -60,6 +66,7 @@ const cancelTimer = () => {
     clearTimeout(localStorage.getItem(`alert-timeout`))
     clearInterval(localStorage.getItem(`timer-interval`))
     document.getElementById(`timer`).innerText = ""
+    localStorage.clear()
 
 }
 
