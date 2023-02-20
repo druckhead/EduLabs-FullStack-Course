@@ -9,11 +9,16 @@ const toggleDisabled = () => {
     elements.forEach(element => element.toggleAttribute(`disabled`));
 }
 
+const loadFromLocalStorage = () => {
+    const secondsLeft = localStorage.getItem(`time-left`)
+    return secondsLeft
+}
+
 const loadCompleteHandler = () => {
     const start = document.getElementById('start-btn')
     const cancel = document.getElementById('cancel-btn')
     const input = document.getElementById(`second-input`)
-    
+
     start.onclick = startTimer
     cancel.onclick = cancelTimer
     input.oninput = (event) => {
@@ -26,39 +31,89 @@ const loadCompleteHandler = () => {
             start.toggleAttribute(`disabled`)
         }
     }
+
+    const timeLeft = localStorage.getItem(`time-left`)
+    if (timeLeft) {
+        updateTimer(timeLeft)
+    }
+}
+
+const seLocalStorageItem = ({ timestamp = null, initialValue = null, secondsLeft = null, timerId = null }) => {
+    if (timestamp) {
+        localStorage.setItem(`timer-started`, timestamp)
+    }
+    if (initialValue) {
+        localStorage.setItem(`initial-value`, initialValue)
+    }
+    if (secondsLeft) {
+        localStorage.setItem(`time-left`, secondsLeft)
+    }
+    if (timerId) {
+        localStorage.setItem(`timer-id`, timerId)
+    }
 }
 
 const cancelTimer = () => {
-    document.getElementById(`second-input`).value = ""
     toggleDisabled()
+    document.getElementById(`start-btn`).toggleAttribute(`diabled`)
+    clearTimeout(localStorage.getItem(`timer-timeout`))
+    clearTimeout(localStorage.getItem(`alert-timeout`))
+    clearInterval(localStorage.getItem(`timer-interval`))
+    document.getElementById(`timer`).innerText = ""
+
+}
+
+const updateTimer = (seconds) => {
+    const secondsSpan = document.getElementById(`timer`)
+    secondsSpan.innerText = seconds
+
+    const timerData = { timestamp: Date.now(), initialValue: seconds, secondsLeft: seconds }
+    seLocalStorageItem(timerData)
+
+    toggleDisabled()
+    console.warn(`LOG: ${seconds} second timer started`);
+
+    const interval = setInterval(() => {
+        seconds--
+        secondsSpan.innerText = seconds
+        seLocalStorageItem({ secondsLeft: seconds })
+        if (seconds === 0) {
+            const alert = document.getElementById(`alert-msg`)
+            alert.classList.add(`alert-success`)
+            alert.classList.remove(`d-none`)
+            alert.innerText = `Timer completed.`
+
+            localStorage.clear()
+
+            clearInterval(interval)
+            toggleDisabled()
+
+            document.getElementById(`second-input`).value = 0
+            document.getElementById(`start-btn`).toggleAttribute(`disabled`)
+
+            const alertDisapear = setTimeout(() => {
+                localStorage.setItem(`alert-timeout`, alertDisapear)
+                alert.classList.remove(`alert-danger`)
+                alert.classList.add(`d-none`)
+                clearTimeout(alertDisapear)
+            }, 2500);
+
+            const clearTimerTimeout = setTimeout(() => {
+                localStorage.setItem(`timer-timeout`, clearTimerTimeout)
+                secondsSpan.innerText = ""
+                clearTimeout(clearTimerTimeout)
+            }, 500);
+        }
+    }, 1000);
+    localStorage.setItem(`timer-interval`, interval)
 }
 
 const startTimer = () => {
-    const updateTimer = (seconds) => {
-        const secondsSpan = document.getElementById(`timer`)
-        secondsSpan.innerText = seconds
-        toggleDisabled()
-        console.warn(`LOG: ${seconds} second timer started`);
-        const interval = setInterval(() => {
-            seconds--
-            secondsSpan.innerText = seconds
-            if (seconds === 0) {
-                clearInterval(interval)
-                toggleDisabled()
-                document.getElementById(`second-input`).value = 0
-                document.getElementById(`start-btn`).toggleAttribute(`disabled`)
-                const clearTimerTimeout = setTimeout(() => {
-                    secondsSpan.innerText = ""
-                    clearTimeout(clearTimerTimeout)
-                }, 1000);
-            }
-        }, 1000);
-    }
-
     const secondsInput = document.getElementById(`second-input`)
     const seconds = secondsInput.value
-    updateTimer(seconds)
     secondsInput.value = ""
+
+    updateTimer(seconds)
 
     const timeout = setTimeout(() => {
         console.warn(`LOG: Timer ${timeout} (${seconds} second) completed.`)
