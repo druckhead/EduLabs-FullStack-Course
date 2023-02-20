@@ -1,0 +1,27 @@
+html {
+  font-size: 10px;
+}
+
+#timer-label {
+  min-height: 2.5em;
+}
+
+#second-label,
+#second-input {
+  font-size: 1.6em;
+}
+
+#second-input {
+  max-width: 50%;
+}
+
+.timer-text {
+  font-size: x-large;
+}
+
+.btn-outline-primary,
+.btn-outline-danger {
+  font-size: 2rem;
+  padding-left: 1em;
+  padding-right: 1em;
+}
