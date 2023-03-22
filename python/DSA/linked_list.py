@@ -113,13 +113,22 @@ class LinkedList:
     def __add__(self, other: Self):
         new_ll = LinkedList(self)
         other_list = LinkedList(other)
-        
+
         p = other._head
         while p is not None:
             new_ll.append(p._value)
             p = p._next
-        
+
         return new_ll
+
+    def reverse(self):
+        newll = LinkedList()
+        current = self._tail
+        while current is not None:
+            n = Node(current._value)
+            newll.append(n)
+            current = current._prev
+        return newll
 
 
 if __name__ == "__main__":
@@ -138,4 +147,6 @@ if __name__ == "__main__":
     ll2.append(8)
 
     ll3 = ll + ll2
-    print(ll3)
+
+    ll4 = ll3.reverse()
+    print(ll4)
