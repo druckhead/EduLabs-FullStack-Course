@@ -60,7 +60,7 @@ class Graph:
 
     # iterative #
     def _dfs1(self, from_v, to_v, unvisited: list, distance, previous):
-        while len(unvisited) > 0:
+        if len(unvisited) > 0:
             u = self._min_dist(distance, unvisited)
             if not u:
                 return None
@@ -72,6 +72,7 @@ class Graph:
                     if alt < distance[node["vertex"]]:
                         distance[node["vertex"]] = alt
                         previous[node["vertex"]] = u
+            self._dfs1(u, to_v, unvisited, distance, previous)
 
         return distance[to_v]
 
@@ -133,56 +134,56 @@ class Graph:
 
 
 if __name__ == "__main__":
-    # g = Graph(directed=True)
-    # for city in (
-    #     "Brussels",
-    #     "Kyoto",
-    #     "Amsterdam",
-    #     "Tokyo",
-    #     "Tel Aviv",
-    #     "Paris",
-    #     "London",
-    #     "Hong Kong",
-    # ):
-    #     g.add_node(city)
+    g = Graph(directed=True)
+    for city in (
+        "Brussels",
+        "Kyoto",
+        "Amsterdam",
+        "Tokyo",
+        "Tel Aviv",
+        "Paris",
+        "London",
+        "Hong Kong",
+    ):
+        g.add_node(city)
 
-    # g.add_edge("Brussels", "Tel Aviv", 7)
-    # g.add_edge("Brussels", "Tokyo", 5)
+    g.add_edge("Brussels", "Tel Aviv", 7)
+    g.add_edge("Brussels", "Tokyo", 5)
 
-    # g.add_edge("Tokyo", "Kyoto", 1)
-    # g.add_edge("Tokyo", "Hong Kong", 3)
+    g.add_edge("Tokyo", "Kyoto", 1)
+    g.add_edge("Tokyo", "Hong Kong", 3)
 
-    # g.add_edge("Paris", "Tel Aviv", 4)
-    # g.add_edge("Paris", "London", 2)
-    # g.add_edge("Paris", "Amsterdam", 1)
+    g.add_edge("Paris", "Tel Aviv", 4)
+    g.add_edge("Paris", "London", 2)
+    g.add_edge("Paris", "Amsterdam", 1)
 
-    # g.add_edge("Tel Aviv", "Paris", 2)
+    g.add_edge("Tel Aviv", "Paris", 2)
 
-    # g.add_edge("Hong Kong", "Tel Aviv", 10)
+    g.add_edge("Hong Kong", "Tel Aviv", 10)
 
-    # pprint(g._edges)
-    # print(f"Path from Brussels to Amsterdam: {g.dfs1('Brussels', 'Amsterdam')}")
-    # # brussel -(7)> telaviv -(2)> paris -(1)> amsterdam == 10
-    # # brussel -(5)> tokyo -(3)> hongkong -(10)> telaviv -(2)> paris -(1)> amsterdam == 21
-    # print(f"Path from Tokyo to Brussels: {g.dfs1('Tokyo', 'Brussels')}")
-    # # no path
+    pprint(g._edges)
+    print(f"Path from Brussels to Amsterdam: {g.dfs1('Brussels', 'Amsterdam')}")
+    # brussel -(7)> telaviv -(2)> paris -(1)> amsterdam == 10
+    # brussel -(5)> tokyo -(3)> hongkong -(10)> telaviv -(2)> paris -(1)> amsterdam == 21
+    print(f"Path from Tokyo to Brussels: {g.dfs1('Tokyo', 'Brussels')}")
+    # no path
 
-    # print(f"Path from Tokyo to Brussels: {g.dfs1('Brussels', 'London')}")
-    # # brussel -(7)> telaviv -(2)> paris -(2)> london == 11
-    # # brussel -(5)> tokyo -(3)> hongkong -(10)> telaviv -(2)> paris -(2)> london == 21
+    print(f"Path from Brussels to London: {g.dfs1('Brussels', 'London')}")
+    # brussel -(7)> telaviv -(2)> paris -(2)> london == 11
+    # brussel -(5)> tokyo -(3)> hongkong -(10)> telaviv -(2)> paris -(2)> london == 21
 
-    linkedin = Graph()
-    for name in ("David", "Julia", "Nathan", "Ron", "James", "Mor", "Dor", "Jim"):
-        linkedin.add_node(name)
+    # linkedin = Graph()
+    # for name in ("David", "Julia", "Nathan", "Ron", "James", "Mor", "Dor", "Jim"):
+    #     linkedin.add_node(name)
 
-    linkedin.add_edge("David", "James")
-    linkedin.add_edge("James", "Jim")
-    linkedin.add_edge("Jim", "Mor")
-    linkedin.add_edge("Jim", "Dor")
-    linkedin.add_edge("Mor", "Julia")
-    linkedin.add_edge("Mor", "Nathan")
-    linkedin.add_edge("Julia", "Ron")
+    # linkedin.add_edge("David", "James")
+    # linkedin.add_edge("James", "Jim")
+    # linkedin.add_edge("Jim", "Mor")
+    # linkedin.add_edge("Jim", "Dor")
+    # linkedin.add_edge("Mor", "Julia")
+    # linkedin.add_edge("Mor", "Nathan")
+    # linkedin.add_edge("Julia", "Ron")
 
-    print(linkedin.is_friend_of_friend("Ron", "David"))
-    print(linkedin.get_path("Ron", "David"))
-    print(linkedin.distance("Ron", "David"))
+    # print(linkedin.is_friend_of_friend("Ron", "David"))
+    # print(linkedin.get_path("Ron", "David"))
+    # print(linkedin.distance("Ron", "David"))
