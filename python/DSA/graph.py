@@ -25,9 +25,9 @@ class Graph:
 
     def is_adjacent(self, v1, v2):
         self._validate_nodes_exist(v1, v2)
-        if v2 in self._edges[v1]:
+        if v2 in [v["vertex"] for v in self._edges[v1]]:
             return -1
-        elif v1 in self._edges[v2]:
+        elif v1 in [v["vertex"] for v in self._edges[v2]]:
             return 1
         else:
             return 0
@@ -72,7 +72,7 @@ class Graph:
                         previous[node["vertex"]] = u
             self._dfs1(u, to_v, unvisited, distance, previous)
 
-        return distance[to_v]
+        return distance[to_v] if distance[to_v] != float("inf") else None
 
     def dfs1(self, from_v, to_v):
         distance = {}
@@ -88,9 +88,8 @@ class Graph:
 
     def is_friend_of_friend(self, m1, m2):
         for friend in self._edges[m1]:
-            for f in self._edges[friend["vertex"]]:
-                if self.is_adjacent(friend["vertex"], m2) == (1 or -1):
-                    return True
+            if self.is_adjacent(friend["vertex"], m2) != 0:
+                return True
         return False
 
     def distance(self, m1, m2):
@@ -157,6 +156,9 @@ if __name__ == "__main__":
 
     g.add_edge("Hong Kong", "Tel Aviv", 10)
 
+    print(g.is_adjacent("Brussels", "Tel Aviv"))
+    print(g.is_adjacent("Tel Aviv", "Hong Kong"))
+
     pprint(g._edges)
     print(f"Path from Brussels to Amsterdam: {g.dfs1('Brussels', 'Amsterdam')}")
     # brussel -(7)> telaviv -(2)> paris -(1)> amsterdam == 10
@@ -166,20 +168,20 @@ if __name__ == "__main__":
 
     print(f"Path from Brussels to London: {g.dfs1('Brussels', 'London')}")
     # brussel -(7)> telaviv -(2)> paris -(2)> london == 11
-    # brussel -(5)> tokyo -(3)> hongkong -(10)> telaviv -(2)> paris -(2)> london == 21
+    # brussel -(5)> tokyo -(3)> hongkong -(10)> telaviv -(2)> paris -(2)> london == 22
 
-    # linkedin = Graph()
-    # for name in ("David", "Julia", "Nathan", "Ron", "James", "Mor", "Dor", "Jim"):
-    #     linkedin.add_node(name)
+    linkedin = Graph()
+    for name in ("David", "Julia", "Nathan", "Ron", "James", "Mor", "Dor", "Jim"):
+        linkedin.add_node(name)
 
-    # linkedin.add_edge("David", "James")
-    # linkedin.add_edge("James", "Jim")
-    # linkedin.add_edge("Jim", "Mor")
-    # linkedin.add_edge("Jim", "Dor")
-    # linkedin.add_edge("Mor", "Julia")
-    # linkedin.add_edge("Mor", "Nathan")
-    # linkedin.add_edge("Julia", "Ron")
+    linkedin.add_edge("David", "James")
+    linkedin.add_edge("James", "Jim")
+    linkedin.add_edge("Jim", "Mor")
+    linkedin.add_edge("Jim", "Dor")
+    linkedin.add_edge("Mor", "Julia")
+    linkedin.add_edge("Mor", "Nathan")
+    linkedin.add_edge("Julia", "Ron")
 
-    # print(linkedin.is_friend_of_friend("Ron", "David"))
-    # print(linkedin.get_path("Ron", "David"))
-    # print(linkedin.distance("Ron", "David"))
+    print("Friends?:", linkedin.is_friend_of_friend("Dor", "Mor"))
+    print("Path:", linkedin.get_path("Ron", "David"))
+    print("Distance:", linkedin.distance("Ron", "David"), "edges")
