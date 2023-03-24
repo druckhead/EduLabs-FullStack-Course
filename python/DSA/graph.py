@@ -57,7 +57,7 @@ class Graph:
                     return True
         return False
 
-    def _dfs1(self, from_v, to_v, unvisited: list, distance, previous):
+    def _cheapest_path(self, from_v, to_v, unvisited: list, distance, previous):
         if len(unvisited) > 0:
             u = self._min_dist(distance, unvisited)
             if not u:
@@ -70,11 +70,11 @@ class Graph:
                     if alt < distance[node["vertex"]]:
                         distance[node["vertex"]] = alt
                         previous[node["vertex"]] = u
-            self._dfs1(u, to_v, unvisited, distance, previous)
+            self._cheapest_path(u, to_v, unvisited, distance, previous)
 
         return distance[to_v] if distance[to_v] != float("inf") else None
 
-    def dfs1(self, from_v, to_v):
+    def cheapest_path(self, from_v, to_v):
         distance = {}
         previous = {}
         unvisited = []
@@ -84,7 +84,7 @@ class Graph:
             unvisited.append(node)
         distance[from_v] = 0
 
-        return self._dfs1(from_v, to_v, unvisited, distance, previous)
+        return self._cheapest_path(from_v, to_v, unvisited, distance, previous)
 
     def is_friend_of_friend(self, m1, m2):
         for friend in self._edges[m1]:
@@ -160,13 +160,19 @@ if __name__ == "__main__":
     print(g.is_adjacent("Tel Aviv", "Hong Kong"))
 
     pprint(g._edges)
-    print(f"Path from Brussels to Amsterdam: {g.dfs1('Brussels', 'Amsterdam')}")
+    print(
+        f"Cheapest Path from Brussels to Amsterdam: {g.cheapest_path('Brussels', 'Amsterdam')}"
+    )
     # brussel -(7)> telaviv -(2)> paris -(1)> amsterdam == 10
     # brussel -(5)> tokyo -(3)> hongkong -(10)> telaviv -(2)> paris -(1)> amsterdam == 21
-    print(f"Path from Tokyo to Brussels: {g.dfs1('Tokyo', 'Brussels')}")
+    print(
+        f"Cheapest Path from Tokyo to Brussels: {g.cheapest_path('Tokyo', 'Brussels')}"
+    )
     # no path
 
-    print(f"Path from Brussels to London: {g.dfs1('Brussels', 'London')}")
+    print(
+        f"Cheapest Path from Brussels to London: {g.cheapest_path('Brussels', 'London')}"
+    )
     # brussel -(7)> telaviv -(2)> paris -(2)> london == 11
     # brussel -(5)> tokyo -(3)> hongkong -(10)> telaviv -(2)> paris -(2)> london == 22
 
