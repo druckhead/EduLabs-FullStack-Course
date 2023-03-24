@@ -1,4 +1,3 @@
-from os import link
 from pprint import pprint
 from typing import Any
 
