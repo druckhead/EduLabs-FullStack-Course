@@ -57,7 +57,6 @@ class Graph:
                     return True
         return False
 
-    # iterative #
     def _dfs1(self, from_v, to_v, unvisited: list, distance, previous):
         if len(unvisited) > 0:
             u = self._min_dist(distance, unvisited)
@@ -86,8 +85,6 @@ class Graph:
         distance[from_v] = 0
 
         return self._dfs1(from_v, to_v, unvisited, distance, previous)
-
-    # end #
 
     def is_friend_of_friend(self, m1, m2):
         for friend in self._edges[m1]:
